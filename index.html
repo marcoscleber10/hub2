@@ -8,11 +8,14 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js for Interactive Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -25,7 +28,6 @@
                         secondary: '#10b981',
                         danger: '#ef4444',
                         warning: '#f59e0b',
-                        info: '#3b82f6',
                         dark: '#0f172a',
                         darker: '#020617',
                         card: '#1e293b',
@@ -47,22 +49,25 @@
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
             background-attachment: fixed;
-            min-height: 100vh;
         }
+        
         .light body {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
+        
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
+        
         .light .glass-card {
             background: rgba(255, 255, 255, 0.85);
             border: 1px solid rgba(0, 0, 0, 0.08);
             color: #1e293b;
         }
+        
         .gradient-text {
             background: linear-gradient(135deg, #f7931a 0%, #fbbf24 50%, #f7931a 100%);
             -webkit-background-clip: text;
@@ -70,10 +75,12 @@
             background-size: 200% 200%;
             animation: gradient-shift 3s ease infinite;
         }
+        
         @keyframes gradient-shift {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
+        
         .metric-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -81,6 +88,11 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
+        
+        .risk-indicator {
+            transition: width 0.5s ease;
+        }
+        
         .strategy-card {
             border-left: 4px solid transparent;
             transition: all 0.3s ease;
@@ -93,48 +105,20 @@
         .strategy-card.moderate { border-left-color: #f59e0b; }
         .strategy-card.aggressive { border-left-color: #ef4444; }
         
-        /* LTV Slider Styles */
-        .ltv-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
-            outline: none;
-            cursor: pointer;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, #f7931a, #f59e0b); 
+            border-radius: 5px; 
         }
-        .ltv-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #fff;
-            border: 4px solid #f7931a;
-            cursor: pointer;
-            transition: transform 0.2s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .ltv-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-        }
-        .ltv-slider::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #fff;
-            border: 4px solid #f7931a;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
+        .light ::-webkit-scrollbar-track { background: #f1f5f9; }
         
-        /* Tooltip */
+        /* Tooltip Styles */
         .tooltip {
             position: relative;
             display: inline-block;
             cursor: help;
-            border-bottom: 1px dashed #64748b;
         }
         .tooltip .tooltip-text {
             visibility: hidden;
@@ -179,33 +163,24 @@
             border-color: #fff transparent transparent transparent;
         }
         
-        /* Risk Status Badge */
-        .risk-badge {
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .risk-safe { background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid #10b981; }
-        .risk-warning { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; }
-        .risk-danger { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; }
-        .risk-liquidated { background: rgba(239,68,68,0.4); color: #fff; border: 2px solid #ef4444; animation: pulse 1.5s infinite; }
-        @keyframes pulse {
+        /* Alert Animation */
+        @keyframes alert-pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { 
-            background: linear-gradient(180deg, #f7931a, #f59e0b); 
-            border-radius: 5px; 
+        .alert-active {
+            animation: alert-pulse 2s infinite;
+            border: 2px solid #ef4444 !important;
         }
-        .light ::-webkit-scrollbar-track { background: #f1f5f9; }
         
-        /* Loading */
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        /* Loading Skeleton */
         .skeleton {
             background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
             background-size: 200% 100%;
@@ -228,19 +203,57 @@
         .mobile-menu.active {
             transform: translateX(0);
         }
-        
-        /* Protocol Badge */
-        .protocol-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            background: rgba(59,130,246,0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59,130,246,0.3);
+
+        /* Range Slider Custom */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #f7931a;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(247, 147, 26, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #334155;
+            border-radius: 2px;
+        }
+        .light input[type=range]::-webkit-slider-runnable-track {
+            background: #cbd5e1;
+        }
+
+        /* LTV Zone Indicator */
+        .ltv-zone {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, 
+                #10b981 0%, 
+                #10b981 25%, 
+                #f59e0b 25%, 
+                #f59e0b 40%, 
+                #ef4444 40%, 
+                #ef4444 100%
+            );
+            position: relative;
+            margin-top: 8px;
+        }
+        .ltv-marker {
+            position: absolute;
+            top: -4px;
+            width: 4px;
+            height: 16px;
+            background: white;
+            border: 2px solid #0f172a;
+            border-radius: 2px;
+            transition: left 0.3s ease;
         }
     </style>
 </head>
@@ -250,6 +263,7 @@
     <nav class="fixed w-full z-50 glass-card border-b border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
+                <!-- Logo -->
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="scrollToSection('dashboard')">
                     <div class="relative">
                         <i data-lucide="landmark" class="w-8 h-8 text-primary"></i>
@@ -261,48 +275,77 @@
                     </div>
                 </div>
                 
+                <!-- Desktop Menu -->
                 <div class="hidden lg:flex items-center space-x-1">
-                    <button onclick="scrollToSection('onchain')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2">
-                        <i data-lucide="activity" class="w-4 h-4"></i><span>On-Chain</span>
+                    <button onclick="scrollToSection('onchain')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2" data-i18n="nav.onchain">
+                        <i data-lucide="activity" class="w-4 h-4"></i>
+                        <span>On-Chain</span>
                     </button>
-                    <button onclick="scrollToSection('lending')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2">
-                        <i data-lucide="coins" class="w-4 h-4"></i><span>Lending</span>
+                    <button onclick="scrollToSection('lending')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2" data-i18n="nav.lending">
+                        <i data-lucide="coins" class="w-4 h-4"></i>
+                        <span>Lending</span>
                     </button>
-                    <button onclick="scrollToSection('strategies')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2">
-                        <i data-lucide="zap" class="w-4 h-4"></i><span>Estratégias</span>
+                    <button onclick="scrollToSection('strategies')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2" data-i18n="nav.strategies">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        <span>Estratégias</span>
                     </button>
-                    <button onclick="scrollToSection('simulator')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2">
-                        <i data-lucide="calculator" class="w-4 h-4"></i><span>Simulador</span>
+                    <button onclick="scrollToSection('simulator')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2" data-i18n="nav.simulator">
+                        <i data-lucide="calculator" class="w-4 h-4"></i>
+                        <span>Simulador</span>
                     </button>
-                    <button onclick="scrollToSection('alerts')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2 relative">
-                        <i data-lucide="bell" class="w-4 h-4"></i><span>Alertas</span>
+                    <button onclick="scrollToSection('alerts')" class="nav-link px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2 relative" data-i18n="nav.alerts">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                        <span>Alertas</span>
                         <span id="alertBadge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center">3</span>
                     </button>
                 </div>
                 
+                <!-- Right Controls -->
                 <div class="flex items-center space-x-2">
+                    <!-- Theme Toggle -->
                     <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Alternar tema">
                         <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-yellow-400"></i>
                         <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-slate-400"></i>
                     </button>
+                    
+                    <!-- Language Selector -->
                     <select onchange="changeLanguage(this.value)" class="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary cursor-pointer">
                         <option value="pt">🇧🇷 PT</option>
                         <option value="en">🇺🇸 EN</option>
-                        <option value="es">🇪🇸 ES</option>
+                        <option value="es">🇪 ES</option>
                     </select>
+                    
+                    <!-- Mobile Menu Button -->
                     <button onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-lg hover:bg-white/10">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
                 </div>
             </div>
         </div>
+        
+        <!-- Mobile Menu -->
         <div id="mobileMenu" class="mobile-menu fixed inset-y-0 left-0 w-64 glass-card border-r border-white/10 z-50 lg:hidden">
             <div class="p-4 space-y-2">
-                <button onclick="scrollToSection('onchain'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3"><i data-lucide="activity" class="w-5 h-5"></i><span>On-Chain</span></button>
-                <button onclick="scrollToSection('lending'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3"><i data-lucide="coins" class="w-5 h-5"></i><span>Lending</span></button>
-                <button onclick="scrollToSection('strategies'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3"><i data-lucide="zap" class="w-5 h-5"></i><span>Estratégias</span></button>
-                <button onclick="scrollToSection('simulator'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3"><i data-lucide="calculator" class="w-5 h-5"></i><span>Simulador</span></button>
-                <button onclick="scrollToSection('alerts'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3"><i data-lucide="bell" class="w-5 h-5"></i><span>Alertas</span></button>
+                <button onclick="scrollToSection('onchain'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                    <span data-i18n="nav.onchain">On-Chain</span>
+                </button>
+                <button onclick="scrollToSection('lending'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3">
+                    <i data-lucide="coins" class="w-5 h-5"></i>
+                    <span data-i18n="nav.lending">Lending</span>
+                </button>
+                <button onclick="scrollToSection('strategies'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3">
+                    <i data-lucide="zap" class="w-5 h-5"></i>
+                    <span data-i18n="nav.strategies">Estratégias</span>
+                </button>
+                <button onclick="scrollToSection('simulator'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3">
+                    <i data-lucide="calculator" class="w-5 h-5"></i>
+                    <span data-i18n="nav.simulator">Simulador</span>
+                </button>
+                <button onclick="scrollToSection('alerts'); toggleMobileMenu()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 flex items-center space-x-3">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span data-i18n="nav.alerts">Alertas</span>
+                </button>
             </div>
         </div>
     </nav>
@@ -313,13 +356,9 @@
         <span class="text-sm font-medium" id="marketCycleDisplay">🟢 Bull Market Confirmado</span>
         <span class="text-xs text-slate-400">•</span>
         <span class="text-xs text-slate-400">BTC: $<span id="btcPriceLive">45,234</span></span>
-        <button onclick="refreshBTCPrice()" class="ml-2 p-1 hover:bg-white/10 rounded transition" title="Atualizar preço BTC">
-            <i data-lucide="refresh-cw" class="w-4 h-4" id="refreshIcon"></i>
+        <button onclick="refreshData()" class="ml-2 p-1 hover:bg-white/10 rounded" title="Atualizar dados">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
         </button>
-        <label class="flex items-center space-x-2 ml-3 text-xs cursor-pointer">
-            <input type="checkbox" id="autoRefresh" checked onchange="toggleAutoRefresh()">
-            <span>Auto</span>
-        </label>
     </div>
 
     <!-- Hero Section -->
@@ -328,59 +367,69 @@
             <div class="text-center mb-12">
                 <div class="inline-flex items-center space-x-2 bg-primary/20 border border-primary/30 rounded-full px-4 py-2 mb-6">
                     <i data-lucide="sparkles" class="w-4 h-4 text-primary"></i>
-                    <span class="text-sm font-medium text-primary">HUB 2.0 • APR Simples • Dados On-Chain em Tempo Real</span>
+                    <span class="text-sm font-medium text-primary">HUB 2.0 • Dados On-Chain + DeFi em Tempo Real</span>
                 </div>
                 <h1 class="text-4xl md:text-6xl font-bold mb-6">
                     Use Dívida como <span class="gradient-text">Ferramenta Estratégica</span>
                 </h1>
-                <p class="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto">
-                    Não venda seu Bitcoin. Use protocolos DeFi para acessar liquidez mantendo sua exposição ao ativo, com cálculo de juros simples (APR) e análise profissional.
+                <p class="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto" data-i18n="hero.subtitle">
+                    Não venda seu Bitcoin. Use protocolos DeFi para acessar liquidez mantendo sua exposição ao ativo, com análise on-chain profissional.
                 </p>
             </div>
 
-            <!-- Key Metrics -->
+            <!-- Key Metrics Grid -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
                 <div class="glass-card rounded-2xl p-5 text-center metric-card">
                     <div class="text-2xl md:text-3xl font-bold text-primary mb-1" id="mvrvValue">2.14</div>
-                    <div class="text-xs md:text-sm text-slate-400">MVRV BTC</div>
+                    <div class="text-xs md:text-sm text-slate-400" data-i18n="metrics.mvrv">MVRV BTC</div>
                     <div class="text-xs text-green-400 mt-1">Zona Neutra</div>
                 </div>
                 <div class="glass-card rounded-2xl p-5 text-center metric-card">
                     <div class="text-2xl md:text-3xl font-bold text-secondary mb-1" id="nuplValue">0.32</div>
-                    <div class="text-xs md:text-sm text-slate-400">NUPL</div>
+                    <div class="text-xs md:text-sm text-slate-400" data-i18n="metrics.nupl">NUPL</div>
                     <div class="text-xs text-green-400 mt-1">Acumulação</div>
                 </div>
                 <div class="glass-card rounded-2xl p-5 text-center metric-card">
-                    <div class="text-2xl md:text-3xl font-bold text-info mb-1" id="bestApr">4.1%</div>
-                    <div class="text-xs md:text-sm text-slate-400">Melhor APR Stable</div>
+                    <div class="text-2xl md:text-3xl font-bold text-blue-400 mb-1" id="bestApy">8.4%</div>
+                    <div class="text-xs md:text-sm text-slate-400" data-i18n="metrics.bestApy">Melhor APY Stable</div>
                     <div class="text-xs text-slate-400 mt-1">Spark Protocol</div>
                 </div>
                 <div class="glass-card rounded-2xl p-5 text-center metric-card">
                     <div class="text-2xl md:text-3xl font-bold text-warning mb-1" id="fearGreed">62</div>
-                    <div class="text-xs md:text-sm text-slate-400">Fear & Greed</div>
+                    <div class="text-xs md:text-sm text-slate-400" data-i18n="metrics.fearGreed">Fear & Greed</div>
                     <div class="text-xs text-green-400 mt-1">Greed</div>
                 </div>
             </div>
 
-            <!-- Strategy Router -->
+            <!-- Risk Filter & Strategy Router -->
             <div class="glass-card rounded-2xl p-6 mb-8">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h3 class="font-bold text-lg mb-2">🧭 Strategy Router Automático</h3>
-                        <p class="text-sm text-slate-400">Recomendações baseadas no cenário atual de mercado</p>
+                        <h3 class="font-bold text-lg mb-2" data-i18n="router.title">🧭 Strategy Router Automático</h3>
+                        <p class="text-sm text-slate-400" data-i18n="router.subtitle">Recomendações baseadas no cenário atual de mercado</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <button onclick="filterStrategies('all')" class="filter-btn active px-4 py-2 rounded-full bg-primary text-white text-sm font-medium transition-all">Todas</button>
-                        <button onclick="filterStrategies('conservative')" class="filter-btn px-4 py-2 rounded-full bg-green-500/20 text-green-400 border border-green-500/50 hover:bg-green-500/30 text-sm transition-all">🟢 Conservador</button>
-                        <button onclick="filterStrategies('moderate')" class="filter-btn px-4 py-2 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 hover:bg-yellow-500/30 text-sm transition-all">🟡 Moderado</button>
-                        <button onclick="filterStrategies('aggressive')" class="filter-btn px-4 py-2 rounded-full bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 text-sm transition-all">🔴 Agressivo</button>
+                        <button onclick="filterStrategies('all')" class="filter-btn active px-4 py-2 rounded-full bg-primary text-white text-sm font-medium transition-all">
+                            Todas
+                        </button>
+                        <button onclick="filterStrategies('conservative')" class="filter-btn px-4 py-2 rounded-full bg-green-500/20 text-green-400 border border-green-500/50 hover:bg-green-500/30 text-sm transition-all">
+                            🟢 Conservador
+                        </button>
+                        <button onclick="filterStrategies('moderate')" class="filter-btn px-4 py-2 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 hover:bg-yellow-500/30 text-sm transition-all">
+                            🟡 Moderado
+                        </button>
+                        <button onclick="filterStrategies('aggressive')" class="filter-btn px-4 py-2 rounded-full bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30 text-sm transition-all">
+                            🔴 Agressivo
+                        </button>
                     </div>
                 </div>
+                
+                <!-- Dynamic Recommendation -->
                 <div class="mt-4 p-4 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-xl border border-primary/20">
                     <div class="flex items-start space-x-3">
                         <i data-lucide="lightbulb" class="w-5 h-5 text-primary mt-0.5 flex-shrink-0"></i>
                         <div>
-                            <p class="text-sm font-medium text-primary mb-1">Recomendação Atual:</p>
+                            <p class="text-sm font-medium text-primary mb-1" data-i18n="router.recommendation">Recomendação Atual:</p>
                             <p class="text-sm text-slate-300" id="strategyRecommendation">
                                 Com MVRV em 2.14 e NUPL positivo, o mercado está em zona neutra. 
                                 <strong>Estratégia sugerida:</strong> Borrow conservador (LTV ≤25%) para necessidades pessoais ou acumulação em dips.
@@ -392,384 +441,805 @@
         </div>
     </section>
 
-    <!-- On-Chain Section (Resumido) -->
+    <!-- On-Chain Metrics Section -->
     <section id="onchain" class="py-16 px-4 bg-black/20">
         <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold flex items-center mb-8">
-                <i data-lucide="activity" class="w-7 h-7 text-primary mr-3"></i>
-                📊 Métricas On-Chain Oficiais
-            </h2>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="glass-card rounded-2xl p-6">
-                    <h3 class="font-bold mb-4 flex items-center"><i data-lucide="trending-up" class="w-5 h-5 text-primary mr-2"></i>MVRV Z-Score</h3>
-                    <p class="text-sm text-slate-400 mb-3">Relação entre valor de mercado e valor realizado. Indica se BTC está sobre/subvalorizado.</p>
-                    <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 65%"></div>
-                    </div>
-                    <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>Oversold</span><span>Neutro</span><span>Overbought</span>
-                    </div>
-                </div>
-                <div class="glass-card rounded-2xl p-6">
-                    <h3 class="font-bold mb-4 flex items-center"><i data-lucide="pie-chart" class="w-5 h-5 text-secondary mr-2"></i>NUPL</h3>
-                    <p class="text-sm text-slate-400 mb-3">Net Unrealized Profit/Loss. Mostra sentimento de lucro/prejuízo da rede.</p>
-                    <div class="flex items-center space-x-4">
-                        <div class="text-3xl font-bold text-secondary">0.32</div>
-                        <span class="risk-badge risk-safe">Acumulação</span>
-                    </div>
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold flex items-center">
+                    <i data-lucide="activity" class="w-7 h-7 text-primary mr-3"></i>
+                    <span data-i18n="onchain.title">📊 Métricas On-Chain Oficiais</span>
+                </h2>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-slate-400" data-i18n="onchain.source">Fontes:</span>
+                    <span class="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded">Glassnode</span>
+                    <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded">CoinMetrics</span>
+                    <span class="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded">DefiLlama</span>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Lending Protocols Section -->
-    <section id="lending" class="py-16 px-4">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold flex items-center mb-8">
-                <i data-lucide="coins" class="w-7 h-7 text-primary mr-3"></i>
-                🏦 Protocolos de Lending (APR Simples)
-            </h2>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4" id="protocolsGrid">
-                <!-- Preenchido via JS -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Strategies Section (Resumido) -->
-    <section id="strategies" class="py-16 px-4 bg-black/20">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold flex items-center mb-8">
-                <i data-lucide="zap" class="w-7 h-7 text-primary mr-3"></i>
-                ⚡ Estratégias Comprovadas
-            </h2>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="glass-card rounded-2xl p-5 strategy-card conservative">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="risk-badge risk-safe">Conservador</span>
-                        <span class="text-xs text-slate-400">LTV ≤25%</span>
-                    </div>
-                    <h4 class="font-bold mb-2">💧 Liquidez para o Dia a Dia</h4>
-                    <p class="text-sm text-slate-400 mb-3">Use BTC como colateral para empréstimos em stablecoins cobrir despesas sem vender.</p>
-                    <div class="text-xs text-slate-500">APR médio: 3-5% • Risco: Mínimo</div>
-                </div>
-                <div class="glass-card rounded-2xl p-5 strategy-card moderate">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="risk-badge risk-warning">Moderado</span>
-                        <span class="text-xs text-slate-400">LTV 25-50%</span>
-                    </div>
-                    <h4 class="font-bold mb-2">📉 Alavancagem em Queda</h4>
-                    <p class="text-sm text-slate-400 mb-3">Borrow em dips para comprar mais BTC, pagando juros simples com APR transparente.</p>
-                    <div class="text-xs text-slate-500">APR médio: 4-7% • Risco: Moderado</div>
-                </div>
-                <div class="glass-card rounded-2xl p-5 strategy-card aggressive">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="risk-badge risk-danger">Agressivo</span>
-                        <span class="text-xs text-slate-400">LTV 50-75%</span>
-                    </div>
-                    <h4 class="font-bold mb-2">🔄 Loop Profissional</h4>
-                    <p class="text-sm text-slate-400 mb-3">Estratégia avançada: depositar borrowed stablecoins como colateral adicional (cuidado!).</p>
-                    <div class="text-xs text-slate-500">APR médio: 5-9% • Risco: Alto • Apenas experts</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 🔥 SIMULADOR ATUALIZADO - APR SIMPLES 🔥 -->
-    <section id="simulator" class="py-16 px-4">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold flex items-center mb-8">
-                <i data-lucide="calculator" class="w-7 h-7 text-primary mr-3"></i>
-                🧮 Simulador de Empréstimo (APR Simples)
-            </h2>
             
             <div class="grid lg:grid-cols-2 gap-6">
-                <!-- Inputs -->
-                <div class="glass-card rounded-2xl p-6 space-y-5">
-                    <h3 class="font-bold text-lg flex items-center">
-                        <i data-lucide="settings" class="w-5 h-5 text-primary mr-2"></i>
-                        Parâmetros do Empréstimo
+                <!-- MVRV Chart -->
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-lg flex items-center">
+                            <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                            MVRV Z-Score BTC
+                            <span class="tooltip ml-2">
+                                <i data-lucide="help-circle" class="w-4 h-4 text-slate-400"></i>
+                                <span class="tooltip-text">
+                                    <strong>MVRV Z-Score:</strong> Compara o valor de mercado com o valor realizado. 
+                                    <br><br>
+                                    🔴 > 7: Topo histórico (venda)
+                                    <br>🟡 3-7: Zona de realização
+                                    <br>🟢 < 1: Fundo (acumulação)
+                                </span>
+                            </span>
+                        </h3>
+                        <div class="flex space-x-1">
+                            <button class="period-btn active px-3 py-1 text-xs rounded bg-primary/20 text-primary" data-period="90d">90d</button>
+                            <button class="period-btn px-3 py-1 text-xs rounded hover:bg-white/10" data-period="1y">1y</button>
+                            <button class="period-btn px-3 py-1 text-xs rounded hover:bg-white/10" data-period="all">All</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="mvrvChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex justify-between text-xs text-slate-400">
+                        <span>🔴 Topo: >3.5</span>
+                        <span class="text-primary font-medium" id="mvrvCurrent">Atual: 2.14</span>
+                        <span>🟢 Fundo: <1</span>
+                    </div>
+                </div>
+                
+                <!-- NUPL Chart -->
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-lg flex items-center">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            NUPL (Net Unrealized P/L)
+                            <span class="tooltip ml-2">
+                                <i data-lucide="help-circle" class="w-4 h-4 text-slate-400"></i>
+                                <span class="tooltip-text">
+                                    <strong>NUPL:</strong> Mede lucro/prejuízo não realizado da rede.
+                                    <br><br>
+                                    🔴 > 0.75: Euforia (topo)
+                                    <br>🟡 0.25-0.75: Otimismo
+                                    <br>🟢 -0.25-0.25: Neutralidade
+                                    <br>🔵 < -0.25: Medo/Capitulação
+                                </span>
+                            </span>
+                        </h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="nuplChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex justify-between text-xs text-slate-400">
+                        <span>🔴 Euforia: >0.75</span>
+                        <span class="text-secondary font-medium" id="nuplCurrent">Atual: 0.32</span>
+                        <span>🔵 Capitulação: <-0.25</span>
+                    </div>
+                </div>
+                
+                <!-- MVRV ETH -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-bold text-lg mb-4 flex items-center">
+                        <i data-lucide="hexagon" class="w-5 h-5 text-blue-400 mr-2"></i>
+                        MVRV ETH
                     </h3>
+                    <div class="chart-container">
+                        <canvas id="mvrvEthChart"></canvas>
+                    </div>
+                    <div class="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="bg-red-500/10 rounded p-2">
+                            <div class="text-red-400 font-bold">3.8</div>
+                            <div class="text-slate-400">Topo</div>
+                        </div>
+                        <div class="bg-primary/10 rounded p-2">
+                            <div class="text-primary font-bold" id="mvrvEthValue">1.92</div>
+                            <div class="text-slate-400">Atual</div>
+                        </div>
+                        <div class="bg-green-500/10 rounded p-2">
+                            <div class="text-green-400 font-bold">0.8</div>
+                            <div class="text-slate-400">Fundo</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transfer Volume -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-bold text-lg mb-4 flex items-center">
+                        <i data-lucide="arrow-up-right" class="w-5 h-5 text-purple-400 mr-2"></i>
+                        Volume de Transferências BTC
+                        <span class="tooltip ml-2">
+                            <i data-lucide="help-circle" class="w-4 h-4 text-slate-400"></i>
+                            <span class="tooltip-text">
+                                Volume alto pode indicar:
+                                <br>• Acumulação institucional
+                                <br>• Distribuição de whales
+                                <br>• Movimentação para exchanges (venda)
+                            </span>
+                        </span>
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="volumeChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between text-sm">
+                        <span class="text-slate-400">Média 30d:</span>
+                        <span class="font-bold text-primary">245K BTC/dia</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- API Notice -->
+            <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                <div class="flex items-start space-x-3">
+                    <i data-lucide="info" class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                    <div class="text-sm text-slate-300">
+                        <strong class="text-blue-400">Nota sobre dados on-chain:</strong> 
+                        Métricas como MVRV e NUPL utilizam APIs profissionais (Glassnode/CoinMetrics). 
+                        Esta demonstração usa dados simulados para fins educacionais. 
+                        Para dados em tempo real, considere assinar uma API oficial.
+                        <a href="https://docs.glassnode.com" target="_blank" class="text-primary hover:underline ml-1">Saiba mais →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lending & APY Comparator -->
+    <section id="lending" class="py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-8 flex items-center">
+                <i data-lucide="coins" class="w-7 h-7 text-secondary mr-3"></i>
+                <span data-i18n="lending.title">💰 Comparador de Taxas DeFi</span>
+            </h2>
+            
+            <!-- Asset Tabs -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button class="asset-tab active px-4 py-2 rounded-full bg-secondary/20 text-secondary border border-secondary/50 text-sm font-medium" data-asset="USDC">
+                    USDC
+                </button>
+                <button class="asset-tab px-4 py-2 rounded-full hover:bg-white/10 text-sm font-medium" data-asset="USDT">
+                    USDT
+                </button>
+                <button class="asset-tab px-4 py-2 rounded-full hover:bg-white/10 text-sm font-medium" data-asset="ETH">
+                    ETH
+                </button>
+                <button class="asset-tab px-4 py-2 rounded-full hover:bg-white/10 text-sm font-medium" data-asset="WBTC">
+                    WBTC
+                </button>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- Best Rates Table -->
+                <div class="lg:col-span-2 glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-lg" id="assetTitle">Melhores Taxas para USDC</h3>
+                        <button onclick="refreshApyData()" class="text-sm text-primary hover:underline flex items-center space-x-1">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            <span>Atualizar</span>
+                        </button>
+                    </div>
                     
-                    <!-- Protocol Selector -->
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Protocolo DeFi</label>
-                        <select id="protocolSelect" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary" onchange="updateProtocolParams()">
-                            <option value="aave">Aave (Ethereum)</option>
-                            <option value="spark" selected>Spark Protocol</option>
-                            <option value="compound">Compound</option>
-                            <option value="maker">MakerDAO</option>
-                            <option value="polygon">Aave (Polygon)</option>
-                            <option value="xlayer">Aave (X Layer)</option>
-                        </select>
-                        <div id="protocolInfo" class="mt-2 flex items-center gap-2 text-xs text-slate-400">
-                            <span class="protocol-badge"><i data-lucide="shield-check" class="w-3 h-3"></i><span id="protocolLtvMax">LTV Máx: 70%</span></span>
-                            <span class="protocol-badge"><i data-lucide="alert-triangle" class="w-3 h-3"></i><span id="protocolThreshold">Threshold: 77.5%</span></span>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-slate-400 border-b border-white/10">
+                                    <th class="pb-3 font-medium">Protocolo</th>
+                                    <th class="pb-3 font-medium">Rede</th>
+                                    <th class="pb-3 font-medium text-right">Supply APY</th>
+                                    <th class="pb-3 font-medium text-right">Borrow APY</th>
+                                    <th class="pb-3 font-medium text-center">TVL</th>
+                                    <th class="pb-3 font-medium text-center">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="apyTableBody" class="divide-y divide-white/5">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4 text-xs text-slate-400 flex items-center justify-between">
+                        <span>Fonte: <a href="https://defillama.com" target="_blank" class="text-primary hover:underline">DefiLlama API</a></span>
+                        <span>Atualizado: <span id="lastUpdate">--:--</span></span>
+                    </div>
+                </div>
+                
+                <!-- APY Simulator -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-bold text-lg mb-4" data-i18n="lending.simulator">🧮 Simulador de Rendimento</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Valor do Investimento (USD)</label>
+                            <input type="number" id="simAmount" value="10000" 
+                                class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:border-secondary"
+                                oninput="calculateYield()">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Período (meses)</label>
+                            <input type="range" id="simPeriod" min="1" max="36" value="12" 
+                                class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                                oninput="updatePeriodDisplay(); calculateYield()">
+                            <div class="flex justify-between text-xs text-slate-400 mt-1">
+                                <span>1m</span>
+                                <span id="periodDisplay" class="text-secondary font-bold">12 meses</span>
+                                <span>3y</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">APY Estimado (%)</label>
+                            <input type="number" id="simApy" value="8.4" step="0.1"
+                                class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:border-secondary"
+                                oninput="calculateYield()">
+                        </div>
+                        
+                        <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                            <div class="text-sm text-slate-400 mb-1">Valor Projetado</div>
+                            <div class="text-2xl font-bold text-secondary" id="projectedValue">$10,874</div>
+                            <div class="text-xs text-slate-400 mt-1">
+                                Lucro: <span class="text-green-400 font-medium" id="projectedProfit">+$874</span>
+                            </div>
+                        </div>
+                        
+                        <button onclick="compareProtocols()" class="w-full bg-gradient-to-r from-secondary to-emerald-600 hover:from-secondary/90 hover:to-emerald-600/90 text-white font-medium py-3 rounded-xl transition-all">
+                            Comparar Protocolos
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Strategy Cards Preview -->
+            <div class="mt-8">
+                <h3 class="font-bold text-xl mb-4" data-i18n="lending.strategies">Estratégias de Yield Prontas</h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="glass-card rounded-xl p-4 border-l-4 border-green-500 cursor-pointer hover:shadow-glow-green transition-all" onclick="showStrategyDetail('carry')">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold">Carry Trade Stable</h4>
+                            <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded">~4% spread</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-3">Borrow em protocolo barato, supply em protocolo com yield maior.</p>
+                        <div class="flex items-center text-xs text-slate-400">
+                            <i data-lucide="shield-check" class="w-4 h-4 mr-1"></i>
+                            <span>Risco: Baixo-Moderado</span>
                         </div>
                     </div>
                     
+                    <div class="glass-card rounded-xl p-4 border-l-4 border-blue-500 cursor-pointer hover:shadow-glow-blue transition-all" onclick="showStrategyDetail('borrow-btc')">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold">Borrow BTC → Buy ETH</h4>
+                            <span class="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded">Beta play</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-3">Use BTC como colateral para exposição a ETH, diversificando risco.</p>
+                        <div class="flex items-center text-xs text-slate-400">
+                            <i data-lucide="triangle-alert" class="w-4 h-4 mr-1"></i>
+                            <span>Risco: Moderado-Alto</span>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl p-4 border-l-4 border-purple-500 cursor-pointer hover:shadow-glow-orange transition-all" onclick="showStrategyDetail('stable-stack')">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold">Stablecoin Stacking</h4>
+                            <span class="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded">Auto-rotativo</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-3">Mova capital automaticamente para onde o APY está maior.</p>
+                        <div class="flex items-center text-xs text-slate-400">
+                            <i data-lucide="zap" class="w-4 h-4 mr-1"></i>
+                            <span>Risco: Moderado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Advanced Strategies Section -->
+    <section id="strategies" class="py-16 px-4 bg-black/20">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-8 text-center" data-i18n="strategies.title">🎯 Estratégias Avançadas com Bitcoin</h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="strategiesGrid">
+                
+                <!-- Strategy 1: Daily Purchases -->
+                <div class="strategy-card glass-card rounded-2xl p-6 conservative" data-risk="conservative" data-category="daily">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-green-500/20 rounded-lg">
+                            <i data-lucide="shopping-cart" class="w-6 h-6 text-green-400"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">Conservador</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2" data-i18n="strategies.daily.title">1. Liquidez para o Dia a Dia</h3>
+                    <p class="text-sm text-slate-400 mb-4">Acesse cash sem vender BTC</p>
+                    
+                    <ul class="space-y-2 text-sm mb-4">
+                        <li class="flex items-start">
+                            <i data-lucide="check" class="w-4 h-4 text-green-400 mr-2 mt-0.5"></i>
+                            <span>Deposita BTC como colateral</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="check" class="w-4 h-4 text-green-400 mr-2 mt-0.5"></i>
+                            <span>Pega 10-25% do valor em stable</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="check" class="w-4 h-4 text-green-400 mr-2 mt-0.5"></i>
+                            <span>Usa para despesas ou emergências</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="check" class="w-4 h-4 text-green-400 mr-2 mt-0.5"></i>
+                            <span>Quita quando BTC valorizar</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4">
+                        <div class="flex items-center text-yellow-400 text-xs">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 mr-2"></i>
+                            <span class="font-medium">LTV Máx Recomendado: 25%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="openProtocol('aave')" class="flex-1 bg-primary hover:bg-primary/80 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                            Aave
+                        </button>
+                        <button onclick="openProtocol('spark')" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                            Spark
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Strategy 2: Buy The Dip -->
+                <div class="strategy-card glass-card rounded-2xl p-6 moderate" data-risk="moderate" data-category="bear">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-blue-500/20 rounded-lg">
+                            <i data-lucide="trending-down" class="w-6 h-6 text-blue-400"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-medium">Moderado</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">2. Alavancagem em Queda</h3>
+                    <p class="text-sm text-slate-400 mb-4">Buy The Dip com colateral BTC</p>
+                    
+                    <ul class="space-y-2 text-sm mb-4">
+                        <li class="flex items-start">
+                            <i data-lucide="arrow-down" class="w-4 h-4 text-blue-400 mr-2 mt-0.5"></i>
+                            <span>BTC cai 20-30% (capitulação)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="check" class="w-4 h-4 text-green-400 mr-2 mt-0.5"></i>
+                            <span>Deposita BTC, pega stable</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="check" class="w-4 h-4 text-green-400 mr-2 mt-0.5"></i>
+                            <span>Compra mais BTC no fundo</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i data-lucide="shield" class="w-4 h-4 text-green-400 mr-2 mt-0.5"></i>
+                            <span>Mantém LTV ≤25% para segurança</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
+                        <div class="flex items-center text-red-400 text-xs">
+                            <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+                            <span>NÃO usar se: tendência de baixa estrutural</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openProtocol('aave')" class="w-full bg-primary hover:bg-primary/80 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                        Executar Estratégia
+                    </button>
+                </div>
+
+                <!-- Strategy 3: Anti-Crash -->
+                <div class="strategy-card glass-card rounded-2xl p-6 moderate" data-risk="moderate" data-category="bear">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-green-500/20 rounded-lg">
+                            <i data-lucide="shield" class="w-6 h-6 text-green-400"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-medium">Moderado</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">3. Proteção Anti-Crash</h3>
+                    <p class="text-sm text-slate-400 mb-4">Crie reserva estratégica no topo</p>
+                    
+                    <div class="bg-slate-800/50 rounded-lg p-3 mb-4">
+                        <div class="text-xs text-slate-400 mb-2">Quando MVRV > 3.5 (zona de topo):</div>
+                        <ol class="text-xs space-y-1 text-slate-300 list-decimal list-inside">
+                            <li>Deposita BTC como colateral</li>
+                            <li>Pega USDC/DAI</li>
+                            <li class="text-red-400 font-bold">NÃO compra mais BTC</li>
+                            <li>Mantém stable esperando correção</li>
+                            <li>Compra no fundo / quita dívida</li>
+                        </ol>
+                    </div>
+                    
+                    <button onclick="openProtocol('makerdao')" class="w-full bg-primary hover:bg-primary/80 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                        Criar Reserva
+                    </button>
+                </div>
+
+                <!-- Strategy 4: Montinho to Montão -->
+                <div class="strategy-card glass-card rounded-2xl p-6 aggressive" data-risk="aggressive" data-category="bull">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-orange-500/20 rounded-lg">
+                            <i data-lucide="trending-up" class="w-6 h-6 text-orange-400"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium">Agressivo</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">4. "Montinho → Montão"</h3>
+                    <p class="text-sm text-slate-400 mb-4">Juros compostos com colateral</p>
+                    
+                    <div class="bg-blue-500/20 rounded-lg p-3 mb-4">
+                        <div class="text-blue-400 text-xs font-medium mb-2">Modelo de Loop Controlado</div>
+                        <ol class="text-xs space-y-1 text-slate-300 list-decimal list-inside">
+                            <li>Deposita BTC</li>
+                            <li>Pega 15% em USDC</li>
+                            <li>Compra mais BTC</li>
+                            <li>Espera subir 20-30%</li>
+                            <li>Repete ciclo (LTV ≤30%)</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 mb-4">
+                        <div class="flex items-center text-orange-400 text-xs">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 mr-2"></i>
+                            <span>SÓ em Bull Market confirmado</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openProtocol('spark')" class="w-full bg-primary hover:bg-primary/80 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                        Iniciar Loop
+                    </button>
+                </div>
+
+                <!-- Strategy 5: Interest Arbitrage -->
+                <div class="strategy-card glass-card rounded-2xl p-6 conservative" data-risk="conservative" data-category="advanced">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-cyan-500/20 rounded-lg">
+                            <i data-lucide="repeat" class="w-6 h-6 text-cyan-400"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">Conservador</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">5. Arbitragem de Juros</h3>
+                    <p class="text-sm text-slate-400 mb-4">Lucro com spread entre protocolos</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-red-500/10 rounded-lg p-3 text-center">
+                            <div class="text-xs text-slate-400 mb-1">Borrow Custa</div>
+                            <div class="text-2xl font-bold text-red-400">3.8% APY</div>
+                            <div class="text-xs text-slate-400">Aave</div>
+                        </div>
+                        <div class="bg-green-500/10 rounded-lg p-3 text-center">
+                            <div class="text-xs text-slate-400 mb-1">Supply Paga</div>
+                            <div class="text-2xl font-bold text-green-400">8.2% APY</div>
+                            <div class="text-xs text-slate-400">Spark</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-500/20 rounded-lg p-3 mb-4 text-center">
+                        <div class="text-green-400 font-bold text-lg">Spread Líquido: ~4.4% APY</div>
+                    </div>
+                    
+                    <button onclick="openProtocol('spark')" class="w-full bg-primary hover:bg-primary/80 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                        Executar Arbitragem
+                    </button>
+                </div>
+
+                <!-- Strategy 6: Professional Loop -->
+                <div class="strategy-card glass-card rounded-2xl p-6 aggressive" data-risk="aggressive" data-category="bull">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-pink-500/20 rounded-lg">
+                            <i data-lucide="zap" class="w-6 h-6 text-pink-400"></i>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium">Profissional</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">6. Loop Profissional (LTV ≤35%)</h3>
+                    <p class="text-sm text-slate-400 mb-4">Alavancagem máxima com controle de risco</p>
+                    
+                    <div class="bg-slate-800/50 rounded-lg p-3 mb-4">
+                        <ol class="text-xs space-y-2 text-slate-300 list-decimal list-inside">
+                            <li>Deposita BTC → Pega USDC</li>
+                            <li>Compra BTC → Deposita novamente</li>
+                            <li>Repete até LTV alvo (máx 35%)</li>
+                            <li>Monitora preço de liquidação</li>
+                            <li>Desalavanca se volatilidade aumentar</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div class="bg-green-500/20 rounded p-2 text-center">
+                            <div class="text-xs text-green-400">✓ Bull Market</div>
+                            <div class="text-xs text-slate-400">Alta rentabilidade</div>
+                        </div>
+                        <div class="bg-red-500/20 rounded p-2 text-center">
+                            <div class="text-xs text-red-400">✗ Bear Market</div>
+                            <div class="text-xs text-slate-400">Alto risco de liquidação</div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="openProtocol('aave')" class="w-full bg-primary hover:bg-primary/80 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                        Iniciar Loop Profissional
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- PROFESSIONAL SIMULATOR SECTION -->
+    <section id="simulator" class="py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold mb-2 flex items-center justify-center">
+                    <i data-lucide="calculator" class="w-7 h-7 text-primary mr-3"></i>
+                    <span>🧮 Simulador Profissional de Empréstimo</span>
+                </h2>
+                <p class="text-slate-400">APR • Preço BTC em Tempo Real • Stress Test • Comparação Institucional</p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Input Panel -->
+                <div class="glass-card rounded-2xl p-6 space-y-6">
+                    
+                    <!-- Protocol Selector -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2 flex items-center">
+                            <i data-lucide="layers" class="w-4 h-4 mr-2 text-primary"></i>
+                            Protocolo
+                        </label>
+                        <select id="protocolSelect" onchange="updateProtocolParams(); calculateLoan()" 
+                            class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors">
+                            <option value="aave">Aave (Ethereum)</option>
+                            <option value="spark">Spark Protocol</option>
+                            <option value="compound">Compound</option>
+                            <option value="maker">MakerDAO</option>
+                            <option value="aave_polygon">Aave (Polygon)</option>
+                            <option value="aave_xlayer">Aave (XLayer)</option>
+                        </select>
+                        <div class="mt-2 flex gap-2 text-xs">
+                            <span class="px-2 py-1 bg-slate-800 rounded">LTV Máx: <span id="maxLTVDisplay" class="text-primary font-bold">80%</span></span>
+                            <span class="px-2 py-1 bg-slate-800 rounded">Liq. Threshold: <span id="liqThresholdDisplay" class="text-primary font-bold">82.5%</span></span>
+                        </div>
+                    </div>
+
                     <!-- BTC Amount -->
                     <div>
                         <label class="block text-sm font-medium mb-2">Quantidade de BTC (Colateral)</label>
                         <div class="relative">
-                            <input type="number" id="btcAmount" value="0.5" step="0.01" min="0.001" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 pl-10 focus:outline-none focus:border-primary" oninput="calculateLoan()">
-                            <i data-lucide="bitcoin" class="w-5 h-5 text-primary absolute left-3 top-3.5"></i>
+                            <input type="number" id="btcAmount" step="0.001" value="1.0" 
+                                class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors pr-16"
+                                oninput="calculateLoan()">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">BTC</span>
                         </div>
                     </div>
-                    
-                    <!-- BTC Price -->
+
+                    <!-- BTC Price with Auto/Manual Toggle -->
                     <div>
                         <label class="block text-sm font-medium mb-2 flex items-center justify-between">
-                            <span>Preço do BTC (USD)</span>
-                            <button onclick="refreshBTCPrice()" class="text-xs text-primary hover:underline flex items-center gap-1">
-                                <i data-lucide="refresh-cw" class="w-3 h-3"></i>Atualizar
+                            <span>Preço do Bitcoin (USD)</span>
+                            <button onclick="togglePriceMode()" id="priceModeBtn" class="text-xs px-2 py-1 bg-primary/20 text-primary rounded hover:bg-primary/30 transition-colors">
+                                🔄 Auto
                             </button>
                         </label>
                         <div class="relative">
-                            <input type="number" id="btcPrice" value="45000" step="100" min="1000" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 pl-10 focus:outline-none focus:border-primary" oninput="calculateLoan()">
-                            <span class="absolute left-3 top-3.5 text-slate-400">$</span>
+                            <input type="number" id="btcPrice" value="45000" 
+                                class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors pr-20"
+                                oninput="calculateLoan()">
+                            <button onclick="fetchBTCPrice()" id="fetchPriceBtn"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-primary hover:bg-primary/80 text-white text-xs rounded transition-colors flex items-center gap-1">
+                                <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                                <span>Atualizar</span>
+                            </button>
                         </div>
-                        <p class="text-xs text-slate-500 mt-1" id="priceSource">Fonte: CoinGecko • Último: <span id="lastUpdate">--:--</span></p>
+                        <div class="mt-2 flex items-center justify-between text-xs">
+                            <span class="text-slate-400">📡 CoinGecko API</span>
+                            <span class="text-slate-400">ou digite manualmente</span>
+                        </div>
                     </div>
-                    
+
+                    <!-- LTV Slider with Visual Zones -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium">LTV (Loan-to-Value)</label>
+                            <span id="ltvDisplay" class="text-2xl font-bold text-primary">25%</span>
+                        </div>
+                        <input type="range" id="ltvSlider" min="5" max="75" value="25" step="1"
+                            class="w-full"
+                            oninput="updateLTVDisplay(); calculateLoan()">
+                        
+                        <!-- LTV Zone Indicator -->
+                        <div class="ltv-zone mt-2">
+                            <div id="ltvMarker" class="ltv-marker" style="left: 25%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-slate-400 mt-1">
+                            <span class="text-green-400">🟢 Seguro ≤25%</span>
+                            <span class="text-yellow-400">🟡 Moderado 25-40%</span>
+                            <span class="text-red-400">🔴 Alto ≥40%</span>
+                        </div>
+                    </div>
+
                     <!-- APR Input -->
                     <div>
-                        <label class="block text-sm font-medium mb-2">
-                            <span class="tooltip">APR Anual (%)<span class="tooltip-text">Juros simples (não compostos). Fórmula: Juros = Principal × (APR/100) × (Meses/12). Padrão em protocolos DeFi.</span></span>
-                        </label>
+                        <label class="block text-sm font-medium mb-2">APR Anual (%)</label>
                         <div class="relative">
-                            <input type="number" id="aprRate" value="4.1" step="0.1" min="0" max="50" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 pl-10 focus:outline-none focus:border-primary" oninput="calculateLoan()">
-                            <span class="absolute left-3 top-3.5 text-primary">%</span>
+                            <input type="number" id="aprRate" value="4.0" step="0.1" min="0" max="50"
+                                class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors pr-12"
+                                oninput="calculateLoan()">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">%</span>
                         </div>
-                        <p class="text-xs text-slate-500 mt-1">Valor baseado no protocolo selecionado. Pode ajustar manualmente.</p>
+                        <p class="text-xs text-slate-400 mt-1">Juros simples (não compostos)</p>
                     </div>
-                    
-                    <!-- LTV Slider -->
-                    <div>
-                        <label class="block text-sm font-medium mb-2 flex items-center justify-between">
-                            <span>LTV (Loan-to-Value)</span>
-                            <span class="text-primary font-bold" id="ltvDisplay">25%</span>
-                        </label>
-                        <input type="range" id="ltvSlider" class="ltv-slider" min="5" max="75" value="25" oninput="updateLTV()">
-                        <div class="flex justify-between text-xs text-slate-500 mt-1">
-                            <span>5% 🟢</span><span>50% 🟡</span><span>75% 🔴</span>
-                        </div>
-                        <p class="text-xs text-slate-400 mt-2">
-                            <i data-lucide="info" class="w-3 h-3 inline mr-1"></i>
-                            LTV máximo permitido: <strong id="ltvMaxDisplay">70%</strong> (definido pelo protocolo)
-                        </p>
-                    </div>
-                    
-                    <!-- Loan Duration -->
+
+                    <!-- Period -->
                     <div>
                         <label class="block text-sm font-medium mb-2">Período do Empréstimo</label>
-                        <select id="loanMonths" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-primary" onchange="calculateLoan()">
-                            <option value="1">1 mês</option>
-                            <option value="3">3 meses</option>
-                            <option value="6">6 meses</option>
-                            <option value="12" selected>12 meses</option>
-                            <option value="24">24 meses</option>
-                        </select>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setPeriod(6)" class="period-btn px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm transition-colors border border-slate-600" data-months="6">6 meses</button>
+                            <button onclick="setPeriod(12)" class="period-btn active px-3 py-2 rounded-lg bg-primary text-white text-sm transition-colors" data-months="12">1 ano</button>
+                            <button onclick="setPeriod(24)" class="period-btn px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm transition-colors border border-slate-600" data-months="24">2 anos</button>
+                        </div>
+                        <input type="hidden" id="loanPeriod" value="12">
                     </div>
                 </div>
-                
-                <!-- Results -->
-                <div class="glass-card rounded-2xl p-6 space-y-5">
-                    <h3 class="font-bold text-lg flex items-center">
-                        <i data-lucide="circle-help" class="w-5 h-5 text-secondary mr-2"></i>
-                        Resultados do Simulador
-                    </h3>
-                    
-                    <!-- Loan Summary -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white/5 rounded-xl p-4">
-                            <p class="text-xs text-slate-400 mb-1">Valor do Empréstimo</p>
-                            <p class="text-xl font-bold text-secondary" id="loanAmount">$5,625.00</p>
-                            <p class="text-xs text-slate-500" id="loanAmountBTC">≈ 0.125 BTC</p>
+
+                <!-- Results Panel -->
+                <div class="space-y-6">
+                    <!-- Main Results -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-4 flex items-center">
+                            <i data-lucide="circle-help" class="w-5 h-5 text-primary mr-2"></i>
+                            Resultados da Simulação
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                                <div class="text-sm text-slate-400 mb-1">Valor do Empréstimo</div>
+                                <div class="text-2xl font-bold text-primary" id="loanValue">$11,250</div>
+                                <div class="text-xs text-slate-400 mt-1">LTV 25%</div>
+                            </div>
+                            
+                            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                                <div class="text-sm text-slate-400 mb-1">Preço de Liquidação</div>
+                                <div class="text-2xl font-bold text-danger" id="liquidationPrice">$28,125</div>
+                                <div class="text-xs text-slate-400 mt-1">Queda de <span id="dropToLiq">37.5%</span></div>
+                            </div>
                         </div>
-                        <div class="bg-white/5 rounded-xl p-4">
-                            <p class="text-xs text-slate-400 mb-1">Colateral em USD</p>
-                            <p class="text-xl font-bold" id="collateralUSD">$22,500.00</p>
-                            <p class="text-xs text-slate-500" id="collateralBTC">0.5 BTC</p>
+
+                        <div class="space-y-3 mb-6">
+                            <div class="flex justify-between items-center py-2 border-b border-white/5">
+                                <span class="text-slate-400">Juros Anual (APR)</span>
+                                <span class="font-bold text-secondary" id="annualInterest">$450</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-white/5">
+                                <span class="text-slate-400">Juros Total (período)</span>
+                                <span class="font-bold text-secondary" id="totalInterest">$450</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-white/5">
+                                <span class="text-slate-400">Juros em BTC</span>
+                                <span class="font-bold text-orange-400" id="interestBTC">0.010 BTC</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-slate-400">Custo Mensal</span>
+                                <span class="font-bold" id="monthlyCost">$37.50</span>
+                            </div>
+                        </div>
+
+                        <!-- Risk Indicator -->
+                        <div class="bg-slate-800/30 rounded-xl p-4 border border-slate-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">Nível de Risco</span>
+                                <span id="riskBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400">BAIXO</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div id="riskBar" class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 risk-indicator" style="width: 25%"></div>
+                            </div>
+                            <p id="riskText" class="text-xs text-slate-400 mt-2">
+                                ✅ Posição segura. Margin de segurança: <span class="text-green-400 font-bold">37.5%</span>
+                            </p>
                         </div>
                     </div>
-                    
-                    <!-- Interest Calculation (APR Simple) -->
-                    <div class="bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-xl p-4 border border-primary/20">
-                        <p class="text-xs text-slate-400 mb-2 flex items-center">
-                            <span class="tooltip">Juros Totais (APR Simples)<span class="tooltip-text">Cálculo: $5,625 × (4.1%/100) × (12/12) = $230.63. Sem capitalização mensal.</span></span>
-                        </p>
-                        <div class="flex items-baseline gap-3">
-                            <span class="text-3xl font-bold text-primary" id="totalInterest">$230.63</span>
-                            <span class="text-sm text-slate-400">em 12 meses</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
+
+                    <!-- Stress Test -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-4 flex items-center">
+                            <i data-lucide="activity" class="w-5 h-5 text-warning mr-2"></i>
+                            Stress Test (Simulação de Cenários)
+                        </h3>
+                        
+                        <div class="space-y-4">
                             <div>
-                                <span class="text-slate-400">Custo Mensal:</span>
-                                <span class="font-medium ml-2" id="monthlyInterest">$19.22</span>
+                                <label class="block text-sm font-medium mb-2">Simular Queda do BTC</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="range" id="dropSlider" min="0" max="80" value="0" step="5"
+                                        class="flex-1"
+                                        oninput="updateDropDisplay(); simulateDrop()">
+                                    <span id="dropDisplay" class="w-16 text-center font-bold text-danger">0%</span>
+                                </div>
                             </div>
-                            <div>
-                                <span class="text-slate-400">Em BTC:</span>
-                                <span class="font-medium ml-2" id="interestBTC">≈ 0.0051 BTC</span>
+                            
+                            <div id="stressResults" class="bg-slate-800/30 rounded-lg p-4 space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Novo Preço BTC:</span>
+                                    <span class="font-mono" id="stressPrice">$45,000</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Novo LTV:</span>
+                                    <span class="font-mono text-primary" id="stressLTV">25%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Status:</span>
+                                    <span class="font-bold text-green-400" id="stressStatus">✅ Seguro</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Distância da Liquidação:</span>
+                                    <span class="font-mono text-secondary" id="stressMargin">37.5%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Liquidation Price -->
-                    <div class="bg-white/5 rounded-xl p-4">
-                        <p class="text-xs text-slate-400 mb-2 flex items-center justify-between">
-                            <span>Preço de Liquidação</span>
-                            <span class="tooltip"><i data-lucide="help-circle" class="w-4 h-4 text-slate-500"><span class="tooltip-text">Preço do BTC que aciona liquidação. Fórmula: (Dívida × Threshold) / (Colateral BTC × (1 - Fee))</span></span></span>
-                        </p>
-                        <div class="flex items-baseline gap-3">
-                            <span class="text-2xl font-bold text-danger" id="liquidationPrice">$14,063</span>
-                            <span class="text-sm text-slate-400">(-68.8% do atual)</span>
-                        </div>
-                        <div class="mt-3">
-                            <p class="text-xs text-slate-400 mb-1">Margem de Segurança</p>
-                            <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
-                                <div class="h-full bg-green-500 transition-all duration-500" id="safetyBar" style="width: 68.8%"></div>
+
+                    <!-- Comparison: Sell vs Borrow -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-4 flex items-center">
+                            <i data-lucide="git-compare" class="w-5 h-5 text-blue-400 mr-2"></i>
+                            Comparação: Vender vs Borrow
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                                <div class="text-sm text-red-400 font-bold mb-2">❌ Vender BTC</div>
+                                <div class="space-y-2 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Recebe agora:</span>
+                                        <span class="font-mono" id="sellReceive">$45,000</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Se BTC subir 50%:</span>
+                                        <span class="text-red-400">Perde $22,500</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Imposto (15%):</span>
+                                        <span class="text-red-400">-$6,750</span>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="text-right text-xs font-medium text-green-400 mt-1" id="safetyPercent">68.8%</p>
+                            
+                            <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                                <div class="text-sm text-green-400 font-bold mb-2">✅ Fazer Borrow</div>
+                                <div class="space-y-2 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Recebe agora:</span>
+                                        <span class="font-mono" id="borrowReceive">$11,250</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Se BTC subir 50%:</span>
+                                        <span class="text-green-400">Ganha $22,500</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-slate-400">Custo juros:</span>
+                                        <span class="text-orange-400">-$450</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-primary/10 border border-primary/30 rounded-lg p-3 text-center">
+                            <div class="text-sm text-slate-400">Vantagem do Borrow</div>
+                            <div class="text-2xl font-bold text-primary" id="borrowAdvantage">+$22,050</div>
+                            <div class="text-xs text-slate-400">Se BTC valorizar 50% no período</div>
                         </div>
                     </div>
-                    
-                    <!-- Risk Status -->
-                    <div class="flex items-center justify-between p-4 rounded-xl border" id="riskStatus">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                                <i data-lucide="shield-check" class="w-5 h-5 text-green-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium">Nível de Risco</p>
-                                <p class="text-xs text-slate-400" id="riskText">Baixo • LTV bem abaixo do threshold</p>
-                            </div>
-                        </div>
-                        <span class="risk-badge risk-safe" id="riskBadge">SEGURO</span>
-                    </div>
-                    
-                    <!-- Stress Test Trigger -->
-                    <button onclick="toggleStressTest()" class="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl font-medium transition flex items-center justify-center gap-2">
-                        <i data-lucide="activity" class="w-4 h-4"></i>
-                        <span>🔍 Executar Stress Test (Simular Queda)</span>
-                    </button>
                 </div>
             </div>
-            
-            <!-- Stress Test Panel (Hidden by default) -->
-            <div id="stressTestPanel" class="hidden glass-card rounded-2xl p-6 mt-6">
+
+            <!-- Dynamic Chart -->
+            <div class="mt-6 glass-card rounded-2xl p-6">
                 <h3 class="font-bold text-lg mb-4 flex items-center">
-                    <i data-lucide="circle-alert" class="w-5 h-5 text-warning mr-2"></i>
-                    📉 Stress Test: Simular Queda do BTC
+                    <i data-lucide="trending-up" class="w-5 h-5 text-primary mr-2"></i>
+                    Projeção Visual: Preço vs Liquidação
                 </h3>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Slider -->
-                    <div>
-                        <label class="block text-sm font-medium mb-2 flex items-center justify-between">
-                            <span>Queda do Preço BTC</span>
-                            <span class="text-warning font-bold" id="dropDisplay">-30%</span>
-                        </label>
-                        <input type="range" id="dropSlider" class="ltv-slider" min="0" max="80" value="30" oninput="runStressTest()">
-                        <div class="flex justify-between text-xs text-slate-500 mt-1">
-                            <span>0%</span><span>40%</span><span>80%</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Results -->
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-400">Novo Preço BTC:</span>
-                            <span class="font-medium" id="newPrice">$31,500</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-400">Novo LTV:</span>
-                            <span class="font-medium text-warning" id="newLTV">35.7%</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-400">Distância da Liquidação:</span>
-                            <span class="font-medium" id="distanceToLiq">-55.4%</span>
-                        </div>
-                        <div class="flex justify-between items-center pt-2 border-t border-white/10">
-                            <span class="text-sm font-medium">Status:</span>
-                            <span class="risk-badge risk-warning" id="stressStatus">ATENÇÃO</span>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-2" id="stressMessage">
-                            Com queda de 30%, seu LTV aumenta para 35.7%. Ainda seguro, mas monitore de perto.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Institutional Comparison -->
-            <div class="glass-card rounded-2xl p-6 mt-6">
-                <h3 class="font-bold text-lg mb-4 flex items-center">
-                    <i data-lucide="scale" class="w-5 h-5 text-info mr-2"></i>
-                    ⚖️ Comparação Institucional: Vender vs Borrow
-                </h3>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Sell Option -->
-                    <div class="bg-white/5 rounded-xl p-4 border border-white/10">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-bold">🔴 Vender BTC Agora</h4>
-                            <span class="text-xs text-slate-400">Cenário: BTC +50% em 12 meses</span>
-                        </div>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-slate-400">Venda de 0.125 BTC @ $45,000</span>
-                                <span>$5,625</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-slate-400">Imposto (15% ganho de capital)*</span>
-                                <span class="text-danger">-$843.75</span>
-                            </div>
-                            <div class="flex justify-between pt-2 border-t border-white/10">
-                                <span class="font-medium">Líquido Recebido</span>
-                                <span class="font-bold">$4,781.25</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-slate-500">
-                                <span>Se BTC subir 50%:</span>
-                                <span class="text-green-400">Você perdeu: $2,812.50</span>
-                            </div>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-3">*Considerando custo médio de aquisição de $30,000/BTC</p>
-                    </div>
-                    
-                    <!-- Borrow Option -->
-                    <div class="bg-gradient-to-br from-primary/10 to-orange-500/10 rounded-xl p-4 border border-primary/30">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-bold text-primary">🟢 Borrow com Colateral</h4>
-                            <span class="risk-badge risk-safe">RECOMENDADO</span>
-                        </div>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-slate-300">Empréstimo recebido (APR simples)</span>
-                                <span class="font-bold text-secondary">$5,625</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-slate-300">Juros a pagar em 12 meses</span>
-                                <span class="text-warning">-$230.63</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-slate-300">BTC mantido (0.5 BTC)</span>
-                                <span class="text-green-400">✅</span>
-                            </div>
-                            <div class="flex justify-between pt-2 border-t border-white/20">
-                                <span class="font-medium text-slate-200">Se BTC subir 50%:</span>
-                                <span class="font-bold text-green-400">+ $11,250 no colateral</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-slate-300">
-                                <span>Vantagem vs Vender:</span>
-                                <span class="font-bold text-primary">+ $13,831.87</span>
-                            </div>
-                        </div>
-                        <p class="text-xs text-slate-300 mt-3">✅ Mantém exposição ao BTC • ✅ Liquidez imediata • ✅ Juros previsíveis (APR simples)</p>
-                    </div>
-                </div>
-                
-                <div class="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-xs text-blue-200">
-                    <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
-                    <strong>Nota:</strong> Cálculos com juros simples (APR), sem capitalização. Valores ilustrativos. Consulte um profissional para decisões fiscais.
+                <div class="chart-container" style="height: 350px;">
+                    <canvas id="loanChart"></canvas>
                 </div>
             </div>
         </div>
@@ -777,51 +1247,234 @@
 
     <!-- Alerts Section -->
     <section id="alerts" class="py-16 px-4 bg-black/20">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold flex items-center mb-8">
-                <i data-lucide="bell" class="w-7 h-7 text-primary mr-3"></i>
-                🔔 Alertas Inteligentes
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold mb-8 flex items-center">
+                <i data-lucide="bell" class="w-7 h-7 text-warning mr-3"></i>
+                <span data-i18n="alerts.title">⚠️ Alertas & Notificações</span>
             </h2>
-            <div class="glass-card rounded-2xl p-6">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                    <div>
-                        <h3 class="font-bold">Configure seus alertas</h3>
-                        <p class="text-sm text-slate-400">Receba notificações quando oportunidades ou riscos surgirem</p>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Alert Configuration -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-bold text-lg mb-4" data-i18n="alerts.configure">Configurar Alertas</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                            <div>
+                                <div class="font-medium">APY atinge X%</div>
+                                <div class="text-xs text-slate-400">Receba notificação quando yield superar threshold</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="alertApy" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                            <div>
+                                <div class="font-medium">MVRV entra em zona de compra</div>
+                                <div class="text-xs text-slate-400">Alerta quando MVRV < 1.0 (acumulação)</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="alertMvrv" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                            <div>
+                                <div class="font-medium">TVL muda abruptamente</div>
+                                <div class="text-xs text-slate-400">Alerta se TVL cair >15% em 24h</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="alertTvl" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                            <div>
+                                <div class="font-medium">Novas oportunidades de alto yield</div>
+                                <div class="text-xs text-slate-400">Alerta para APY >15% em protocolos auditados</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="alertOpportunity" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
                     </div>
-                    <button class="px-4 py-2 bg-primary hover:bg-orange-600 rounded-lg font-medium transition flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i>Novo Alerta
+                    
+                    <button onclick="saveAlerts()" class="w-full mt-4 bg-primary hover:bg-primary/80 text-white font-medium py-3 rounded-xl transition-colors">
+                        Salvar Configurações
                     </button>
                 </div>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <i data-lucide="trending-up" class="w-5 h-5 text-green-400"></i>
-                            <div>
-                                <p class="font-medium">APR > 6% em Stablecoins</p>
-                                <p class="text-xs text-slate-400">Protocolos: Spark, Aave • Notificar: Email + Telegram</p>
+                
+                <!-- Active Alerts -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-bold text-lg mb-4" data-i18n="alerts.active">Alertas Ativos</h3>
+                    
+                    <div id="alertsList" class="space-y-3">
+                        <!-- Dynamic alerts -->
+                        <div class="p-4 bg-green-500/10 border border-green-500/30 rounded-lg alert-active">
+                            <div class="flex items-start space-x-3">
+                                <i data-lucide="trending-up" class="w-5 h-5 text-green-400 mt-0.5"></i>
+                                <div>
+                                    <div class="font-medium text-green-400">Oportunidade: Spark USDC</div>
+                                    <div class="text-sm text-slate-300 mt-1">APY subiu para 8.4% (+1.2% em 24h)</div>
+                                    <div class="text-xs text-slate-400 mt-2">Há 2 horas</div>
+                                </div>
                             </div>
                         </div>
-                        <span class="risk-badge risk-safe">Ativo</span>
+                        
+                        <div class="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                            <div class="flex items-start space-x-3">
+                                <i data-lucide="activity" class="w-5 h-5 text-blue-400 mt-0.5"></i>
+                                <div>
+                                    <div class="font-medium text-blue-400">MVRV BTC: Zona Neutra</div>
+                                    <div class="text-sm text-slate-300 mt-1">Indicador em 2.14 — momento para estratégias balanceadas</div>
+                                    <div class="text-xs text-slate-400 mt-2">Atualizado hoje</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                            <div class="flex items-start space-x-3">
+                                <i data-lucide="shield-alert" class="w-5 h-5 text-yellow-400 mt-0.5"></i>
+                                <div>
+                                    <div class="font-medium text-yellow-400">Atenção: Volatilidade</div>
+                                    <div class="text-sm text-slate-300 mt-1">BTC com volatilidade elevada. Revise seu LTV.</div>
+                                    <div class="text-xs text-slate-400 mt-2">Há 6 horas</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <i data-lucide="circle-alert" class="w-5 h-5 text-warning"></i>
-                            <div>
-                                <p class="font-medium">MVRV Z-Score > 3.5</p>
-                                <p class="text-xs text-slate-400">Sinal de possível topo de mercado</p>
-                            </div>
+                    
+                    <button onclick="clearAlerts()" class="w-full mt-4 text-sm text-slate-400 hover:text-primary transition-colors">
+                        Limpar todos os alertas
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Telegram Integration -->
+            <div class="mt-8 glass-card rounded-2xl p-6 border border-primary/30">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="flex items-start space-x-4">
+                        <div class="p-3 bg-blue-500/20 rounded-xl">
+                            <i data-lucide="send" class="w-6 h-6 text-blue-400"></i>
                         </div>
-                        <span class="risk-badge risk-warning">Pendente</span>
+                        <div>
+                            <h4 class="font-bold text-lg">🔔 Receba Alertas no Telegram</h4>
+                            <p class="text-sm text-slate-400 mt-1">
+                                Conecte seu bot do Telegram para receber notificações em tempo real sobre APY, MVRV e oportunidades.
+                            </p>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <i data-lucide="shield-alert" class="w-5 h-5 text-danger"></i>
-                            <div>
-                                <p class="font-medium">LTV > 60% no meu empréstimo</p>
-                                <p class="text-xs text-slate-400">Alerta de risco de liquidação iminente</p>
+                    <button onclick="connectTelegram()" class="px-6 py-3 bg-[#0088cc] hover:bg-[#0077b5] text-white font-medium rounded-xl transition-colors flex items-center space-x-2">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        <span>Conectar Telegram</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education & Risk Section -->
+    <section class="py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Education Hub -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="font-bold text-xl mb-4 flex items-center">
+                        <i data-lucide="book-open" class="w-6 h-6 text-primary mr-3"></i>
+                        <span data-i18n="education.title">📚 Educação Integrada</span>
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-800/50 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors" onclick="showEducationModal('mvrv')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium">O que é MVRV?</h4>
+                                    <p class="text-sm text-slate-400 mt-1">Entenda como este indicador identifica topos e fundos de mercado.</p>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
                             </div>
                         </div>
-                        <span class="risk-badge risk-danger">Crítico</span>
+                        
+                        <div class="p-4 bg-slate-800/50 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors" onclick="showEducationModal('ltv')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium">Como calcular LTV seguro?</h4>
+                                    <p class="text-sm text-slate-400 mt-1">Guia prático para evitar liquidações em empréstimos DeFi.</p>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-slate-800/50 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors" onclick="showEducationModal('arbitrage')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium">Arbitragem de Juros: Passo a Passo</h4>
+                                    <p class="text-sm text-slate-400 mt-1">Como lucrar com spread entre protocolos de forma segura.</p>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t border-white/10">
+                        <a href="#" class="text-primary hover:underline text-sm flex items-center">
+                            <i data-lucide="youtube" class="w-4 h-4 mr-2"></i>
+                            <span>Ver tutoriais em vídeo →</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Risk Disclaimer -->
+                <div class="glass-card rounded-2xl p-6 border-l-4 border-red-500">
+                    <h3 class="font-bold text-xl mb-4 flex items-center">
+                        <i data-lucide="alert-octagon" class="w-6 h-6 text-red-500 mr-3"></i>
+                        <span data-i18n="warnings.title">⚠️ Avisos de Risco</span>
+                    </h3>
+                    
+                    <div class="space-y-4 text-sm">
+                        <div class="flex items-start">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-500 mr-3 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <h4 class="font-bold text-yellow-500 mb-1">Nunca ultrapasse 30% de LTV</h4>
+                                <p class="text-slate-400">Acima disso, o risco de liquidação em volatilidade normal aumenta exponencialmente. Apenas profissionais experientes devem considerar LTVs mais altos.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <i data-lucide="trending-down" class="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <h4 class="font-bold text-red-500 mb-1">Risco de Liquidação</h4>
+                                <p class="text-slate-400">Se o preço do BTC cair abaixo do preço de liquidação, seu colateral será vendido automaticamente, possivelmente com penalidades de 5-15%.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <i data-lucide="code" class="w-5 h-5 text-orange-500 mr-3 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <h4 class="font-bold text-orange-500 mb-1">Risco de Smart Contract</h4>
+                                <p class="text-slate-400">Protocolos DeFi podem ter vulnerabilidades. Use apenas protocolos auditados e com TVL significativo.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <i data-lucide="scale" class="w-5 h-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <h4 class="font-bold text-blue-500 mb-1">Não é Aconselhamento Financeiro</h4>
+                                <p class="text-slate-400">Este conteúdo é apenas educacional. Faça sua própria pesquisa (DYOR) e consulte um profissional financeiro antes de tomar decisões de investimento.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-center">
+                        <p class="text-xs text-slate-400">
+                            <strong class="text-red-400">Lembre-se:</strong> Retornos passados não garantem resultados futuros. 
+                            DeFi envolve riscos significativos. Invista apenas o que pode perder.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -829,394 +1482,1007 @@
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 px-4 border-t border-white/10">
-        <div class="max-w-7xl mx-auto text-center">
-            <div class="flex justify-center items-center gap-2 mb-4">
-                <i data-lucide="landmark" class="w-6 h-6 text-primary"></i>
-                <span class="font-bold gradient-text">Borrow Lab Pro HUB 2.0</span>
+    <footer class="border-t border-white/10 py-12 px-4 mt-16">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i data-lucide="landmark" class="w-7 h-7 text-primary"></i>
+                        <span class="text-xl font-bold gradient-text">Borrow Lab Pro</span>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-4 max-w-md">
+                        Plataforma educacional e estratégica focada em empréstimos DeFi com Bitcoin como colateral. 
+                        Use dívida como ferramenta — não venda seu patrimônio.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-slate-400 hover:text-primary transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-slate-400 hover:text-primary transition-colors">
+                            <i data-lucide="github" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-slate-400 hover:text-primary transition-colors">
+                            <i data-lucide="message-circle" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Recursos</h4>
+                    <ul class="space-y-2 text-sm text-slate-400">
+                        <li><a href="#" class="hover:text-primary transition-colors">Documentação</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">API Reference</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Calculadoras</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-slate-400">
+                        <li><a href="#" class="hover:text-primary transition-colors">Termos de Uso</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Privacidade</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Risk Disclosure</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Contato</a></li>
+                    </ul>
+                </div>
             </div>
-            <p class="text-sm text-slate-400 max-w-2xl mx-auto mb-6">
-                Ferramenta educacional para análise de estratégias de borrowing em DeFi. 
-                <strong>Não é aconselhamento financeiro.</strong> Faça sua própria pesquisa (DYOR).
-            </p>
-            <div class="flex flex-wrap justify-center gap-4 text-xs text-slate-500">
-                <span>📊 Dados: Glassnode, CoinGecko, DefiLlama</span>
-                <span>•</span>
-                <span>🔐 APR Simples • Sem composição</span>
-                <span>•</span>
-                <span>🌐 Código aberto no GitHub</span>
+            
+            <div class="pt-8 border-t border-white/10 text-center text-xs text-slate-500">
+                <p>© 2024 Borrow Lab Pro. Todos os direitos reservados.</p>
+                <p class="mt-2">
+                    Dados on-chain simulados para demonstração. Para produção, integre APIs oficiais: 
+                    <a href="https://glassnode.com" target="_blank" class="text-primary hover:underline">Glassnode</a> • 
+                    <a href="https://coinmetrics.io" target="_blank" class="text-primary hover:underline">CoinMetrics</a> • 
+                    <a href="https://defillama.com" target="_blank" class="text-primary hover:underline">DefiLlama</a> •
+                    <a href="https://coingecko.com" target="_blank" class="text-primary hover:underline">CoinGecko</a>
+                </p>
             </div>
-            <p class="text-xs text-slate-600 mt-6">© 2024 Borrow Lab Pro • Todos os direitos reservados</p>
         </div>
     </footer>
 
-    <!-- JAVASCRIPT COMPLETO - SIMULADOR APR -->
+    <!-- Education Modal (Hidden by default) -->
+    <div id="educationModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeEducationModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl mx-4">
+            <div class="glass-card rounded-2xl p-6 max-h-[80vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold" id="modalTitle">Título do Conteúdo</h3>
+                    <button onclick="closeEducationModal()" class="p-2 hover:bg-white/10 rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div id="modalContent" class="text-sm text-slate-300 space-y-3">
+                    <!-- Dynamic content -->
+                </div>
+                <div class="mt-6 pt-4 border-t border-white/10 flex justify-end">
+                    <button onclick="closeEducationModal()" class="px-4 py-2 bg-primary hover:bg-primary/80 text-white rounded-lg text-sm font-medium">
+                        Entendi, fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 z-50 hidden">
+        <div class="glass-card rounded-xl p-4 shadow-glow-green border border-green-500/30 flex items-center space-x-3">
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+            <span id="toastMessage" class="text-sm">Operação realizada com sucesso!</span>
+        </div>
+    </div>
+
     <script>
-        // ===== CONFIGURAÇÃO DE PROTOCOLOS =====
-        const PROTOCOLS = {
-            aave: {
-                name: "Aave (Ethereum)",
-                maxLTV: 75,
-                liquidationThreshold: 80,
-                liquidationFee: 0.05,
-                baseAPR: 3.2,
-                color: "#2eb67d"
+        // ==================== CONFIG & STATE ====================
+        const config = {
+            apiEndpoints: {
+                defiLlama: 'https://yields.llama.fi/pools',
+                coinGecko: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+                glassnode: 'https://api.glassnode.com/v1/metrics/market/mvrv_usd_365d',
+                coinmetrics: 'https://api.coinmetrics.io/v4/timeseries/assets'
             },
-            spark: {
-                name: "Spark Protocol",
-                maxLTV: 70,
-                liquidationThreshold: 77.5,
-                liquidationFee: 0.05,
-                baseAPR: 4.1,
-                color: "#6366f1"
+            mockData: {
+                mvrv: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], values: [0.8, 1.2, 1.8, 2.4, 3.1, 2.8, 2.1, 1.9, 2.3, 2.7, 2.4, 2.14] },
+                nupl: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], values: [-0.15, 0.05, 0.28, 0.45, 0.62, 0.51, 0.38, 0.29, 0.35, 0.41, 0.36, 0.32] },
+                mvrvEth: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], values: [0.9, 1.1, 1.5, 2.1, 2.8, 2.4, 1.8, 1.7, 1.9, 2.2, 2.0, 1.92] },
+                volume: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], values: [210, 245, 198, 267] }
             },
-            compound: {
-                name: "Compound",
-                maxLTV: 72,
-                liquidationThreshold: 78,
-                liquidationFee: 0.07,
-                baseAPR: 2.8,
-                color: "#00d395"
+            protocols: {
+                aave: { name: 'Aave (Ethereum)', maxLTV: 80, liqThreshold: 82.5, apr: 4.0, network: 'Ethereum' },
+                spark: { name: 'Spark Protocol', maxLTV: 75, liqThreshold: 80, apr: 5.2, network: 'Ethereum' },
+                compound: { name: 'Compound', maxLTV: 75, liqThreshold: 80, apr: 3.9, network: 'Ethereum' },
+                maker: { name: 'MakerDAO', maxLTV: 70, liqThreshold: 75, apr: 6.5, network: 'Ethereum' },
+                aave_polygon: { name: 'Aave (Polygon)', maxLTV: 80, liqThreshold: 82.5, apr: 5.3, network: 'Polygon' },
+                aave_xlayer: { name: 'Aave (XLayer)', maxLTV: 75, liqThreshold: 80, apr: 7.1, network: 'XLayer' }
             },
-            maker: {
-                name: "MakerDAO",
-                maxLTV: 66,
-                liquidationThreshold: 75,
-                liquidationFee: 0.13,
-                baseAPR: 5.5,
-                color: "#1aab9b"
+            lendingProtocols: [
+                { name: 'Aave', network: 'Ethereum', supplyApy: 3.2, borrowApy: 4.1, tvl: '5.2B', link: 'https://app.aave.com' },
+                { name: 'Spark', network: 'Ethereum', supplyApy: 8.4, borrowApy: 5.2, tvl: '1.8B', link: 'https://app.sparkprotocol.io' },
+                { name: 'Compound', network: 'Ethereum', supplyApy: 2.8, borrowApy: 3.9, tvl: '2.1B', link: 'https://app.compound.finance' },
+                { name: 'Aave', network: 'Polygon', supplyApy: 4.1, borrowApy: 5.3, tvl: '420M', link: 'https://app.aave.com' },
+                { name: 'Aave', network: 'XLayer', supplyApy: 6.2, borrowApy: 7.1, tvl: '85M', link: 'https://app.aave.com' },
+                { name: 'MakerDAO', network: 'Ethereum', supplyApy: 5.0, borrowApy: 6.5, tvl: '4.8B', link: 'https://oasis.app' }
+            ]
+        };
+
+        let currentLanguage = localStorage.getItem('language') || 'pt';
+        let charts = {};
+        let priceAutoUpdate = true;
+        let priceUpdateInterval;
+
+        // ==================== TRANSLATIONS ====================
+        const translations = {
+            pt: {
+                'nav.onchain': 'On-Chain',
+                'nav.lending': 'Lending',
+                'nav.strategies': 'Estratégias',
+                'nav.simulator': 'Simulador',
+                'nav.alerts': 'Alertas',
+                'hero.subtitle': 'Não venda seu Bitcoin. Use protocolos DeFi para acessar liquidez mantendo sua exposição ao ativo, com análise on-chain profissional.',
+                'metrics.mvrv': 'MVRV BTC',
+                'metrics.nupl': 'NUPL',
+                'metrics.bestApy': 'Melhor APY Stable',
+                'metrics.fearGreed': 'Fear & Greed',
+                'router.title': '🧭 Strategy Router Automático',
+                'router.subtitle': 'Recomendações baseadas no cenário atual de mercado',
+                'router.recommendation': 'Recomendação Atual:',
+                'onchain.title': '📊 Métricas On-Chain Oficiais',
+                'onchain.source': 'Fontes:',
+                'lending.title': '💰 Comparador de Taxas DeFi',
+                'lending.simulator': '🧮 Simulador de Rendimento',
+                'lending.strategies': 'Estratégias de Yield Prontas',
+                'strategies.title': '🎯 Estratégias Avançadas com Bitcoin',
+                'strategies.daily.title': '1. Liquidez para o Dia a Dia',
+                'alerts.title': '⚠️ Alertas & Notificações',
+                'alerts.configure': 'Configurar Alertas',
+                'alerts.active': 'Alertas Ativos',
+                'education.title': '📚 Educação Integrada',
+                'warnings.title': '⚠️ Avisos de Risco'
             },
-            polygon: {
-                name: "Aave (Polygon)",
-                maxLTV: 70,
-                liquidationThreshold: 75,
-                liquidationFee: 0.05,
-                baseAPR: 3.9,
-                color: "#8247e5"
+            en: {
+                'nav.onchain': 'On-Chain',
+                'nav.lending': 'Lending',
+                'nav.strategies': 'Strategies',
+                'nav.simulator': 'Simulator',
+                'nav.alerts': 'Alerts',
+                'hero.subtitle': 'Don\'t sell your Bitcoin. Use DeFi protocols to access liquidity while maintaining asset exposure, with professional on-chain analysis.',
+                'metrics.mvrv': 'MVRV BTC',
+                'metrics.nupl': 'NUPL',
+                'metrics.bestApy': 'Best Stable APY',
+                'metrics.fearGreed': 'Fear & Greed',
+                'router.title': '🧭 Auto Strategy Router',
+                'router.subtitle': 'Recommendations based on current market conditions',
+                'router.recommendation': 'Current Recommendation:',
+                'onchain.title': '📊 Official On-Chain Metrics',
+                'onchain.source': 'Sources:',
+                'lending.title': '💰 DeFi Rate Comparator',
+                'lending.simulator': '🧮 Yield Simulator',
+                'lending.strategies': 'Ready-Made Yield Strategies',
+                'strategies.title': '🎯 Advanced Bitcoin Strategies',
+                'strategies.daily.title': '1. Daily Liquidity',
+                'alerts.title': '⚠️ Alerts & Notifications',
+                'alerts.configure': 'Configure Alerts',
+                'alerts.active': 'Active Alerts',
+                'education.title': '📚 Integrated Education',
+                'warnings.title': '⚠️ Risk Warnings'
             },
-            xlayer: {
-                name: "Aave (X Layer)",
-                maxLTV: 65,
-                liquidationThreshold: 72,
-                liquidationFee: 0.05,
-                baseAPR: 4.5,
-                color: "#f7931a"
+            es: {
+                'nav.onchain': 'On-Chain',
+                'nav.lending': 'Préstamos',
+                'nav.strategies': 'Estrategias',
+                'nav.simulator': 'Simulador',
+                'nav.alerts': 'Alertas',
+                'hero.subtitle': 'No vendas tu Bitcoin. Usa protocolos DeFi para acceder a liquidez manteniendo exposición al activo, con análisis on-chain profesional.',
+                'metrics.mvrv': 'MVRV BTC',
+                'metrics.nupl': 'NUPL',
+                'metrics.bestApy': 'Mejor APY Stable',
+                'metrics.fearGreed': 'Miedo y Codicia',
+                'router.title': '🧭 Router de Estrategias Automático',
+                'router.subtitle': 'Recomendaciones basadas en condiciones actuales del mercado',
+                'router.recommendation': 'Recomendación Actual:',
+                'onchain.title': '📊 Métricas On-Chain Oficiales',
+                'onchain.source': 'Fuentes:',
+                'lending.title': '💰 Comparador de Tasas DeFi',
+                'lending.simulator': '🧮 Simulador de Rendimiento',
+                'lending.strategies': 'Estrategias de Yield Listas',
+                'strategies.title': '🎯 Estrategias Avanzadas con Bitcoin',
+                'strategies.daily.title': '1. Liquidez para el Día a Día',
+                'alerts.title': '⚠️ Alertas y Notificaciones',
+                'alerts.configure': 'Configurar Alertas',
+                'alerts.active': 'Alertas Activos',
+                'education.title': '📚 Educación Integrada',
+                'warnings.title': '⚠️ Advertencias de Riesgo'
             }
         };
 
-        // ===== ESTADO GLOBAL =====
-        let btcPrice = 45000;
-        let autoRefreshInterval = null;
-        let currentProtocol = 'spark';
-
-        // ===== INICIALIZAÇÃO =====
-        document.addEventListener('DOMContentLoaded', () => {
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-            initProtocolsGrid();
-            refreshBTCPrice();
+            
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light');
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // Initialize simulator
+            updateLTVDisplay();
             calculateLoan();
-            startAutoRefresh();
-        });
-
-        // ===== FUNÇÕES DE PROTOCOLO =====
-        function initProtocolsGrid() {
-            const grid = document.getElementById('protocolsGrid');
-            grid.innerHTML = Object.entries(PROTOCOLS).map(([key, proto]) => `
-                <div class="glass-card rounded-xl p-4 hover:border-primary/50 transition cursor-pointer" onclick="selectProtocol('${key}')">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="font-bold text-sm">${proto.name}</span>
-                        <span class="text-xs px-2 py-1 rounded bg-white/10">${proto.baseAPR}% APR</span>
-                    </div>
-                    <div class="space-y-2 text-xs text-slate-400">
-                        <div class="flex justify-between"><span>LTV Máximo:</span><span class="text-white">${proto.maxLTV}%</span></div>
-                        <div class="flex justify-between"><span>Liquidation Threshold:</span><span class="text-white">${proto.liquidationThreshold}%</span></div>
-                        <div class="flex justify-between"><span>Liquidation Fee:</span><span class="text-white">${proto.liquidationFee*100}%</span></div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function selectProtocol(key) {
-            document.getElementById('protocolSelect').value = key;
-            updateProtocolParams();
-            calculateLoan();
-            // Scroll to simulator
-            document.getElementById('simulator').scrollIntoView({behavior: 'smooth'});
-        }
-
-        function updateProtocolParams() {
-            currentProtocol = document.getElementById('protocolSelect').value;
-            const proto = PROTOCOLS[currentProtocol];
             
-            // Update info badges
-            document.getElementById('protocolLtvMax').textContent = `LTV Máx: ${proto.maxLTV}%`;
-            document.getElementById('protocolThreshold').textContent = `Threshold: ${proto.liquidationThreshold}%`;
-            document.getElementById('ltvMaxDisplay').textContent = `${proto.maxLTV}%`;
+            // Load APY data
+            loadApyData();
             
-            // Update APR input (but allow manual override)
-            const aprInput = document.getElementById('aprRate');
-            if (!aprInput.dataset.userEdited) {
-                aprInput.value = proto.baseAPR;
-            }
+            // Initialize charts
+            initCharts();
             
-            // Limit LTV slider to protocol max
-            const ltvSlider = document.getElementById('ltvSlider');
-            const currentLTV = parseInt(ltvSlider.value);
-            ltvSlider.max = proto.maxLTV;
-            if (currentLTV > proto.maxLTV) {
-                ltvSlider.value = proto.maxLTV;
-                document.getElementById('ltvDisplay').textContent = `${proto.maxLTV}%`;
-            }
+            // Update market cycle
+            updateMarketCycle();
             
-            calculateLoan();
-        }
-
-        // ===== LTV SLIDER =====
-        function updateLTV() {
-            const slider = document.getElementById('ltvSlider');
-            const proto = PROTOCOLS[currentProtocol];
-            
-            // Enforce protocol max
-            if (parseInt(slider.value) > proto.maxLTV) {
-                slider.value = proto.maxLTV;
-            }
-            
-            document.getElementById('ltvDisplay').textContent = `${slider.value}%`;
-            calculateLoan();
-        }
-
-        // ===== CÁLCULO PRINCIPAL (APR SIMPLES) =====
-        function calculateLoan() {
-            // Get inputs
-            const btcAmount = parseFloat(document.getElementById('btcAmount').value) || 0;
-            const btcPrice = parseFloat(document.getElementById('btcPrice').value) || 0;
-            const apr = parseFloat(document.getElementById('aprRate').value) || 0;
-            const ltv = parseInt(document.getElementById('ltvSlider').value) / 100;
-            const months = parseInt(document.getElementById('loanMonths').value);
-            const proto = PROTOCOLS[currentProtocol];
-            
-            // Calculate values
-            const collateralUSD = btcAmount * btcPrice;
-            const loanAmount = collateralUSD * ltv;
-            
-            // APR SIMPLE INTEREST: Principal × (APR/100) × (Months/12)
-            const totalInterest = loanAmount * (apr / 100) * (months / 12);
-            const monthlyInterest = totalInterest / months;
-            const interestBTC = totalInterest / btcPrice;
-            
-            // Liquidation Price Formula: (Debt × Threshold) / (Collateral BTC × (1 - Fee))
-            // Debt = loanAmount, Threshold = proto.liquidationThreshold/100
-            const liquidationPrice = (loanAmount * (proto.liquidationThreshold / 100)) / (btcAmount * (1 - proto.liquidationFee));
-            
-            // Safety Margin
-            const safetyMargin = ((btcPrice - liquidationPrice) / btcPrice * 100).toFixed(1);
-            
-            // Risk Assessment
-            const ltvPercent = ltv * 100;
-            const thresholdPercent = proto.liquidationThreshold;
-            const ltvRatio = ltvPercent / thresholdPercent;
-            
-            let riskLevel, riskBadge, riskColor, riskText;
-            if (ltvRatio < 0.6) {
-                riskLevel = 'safe';
-                riskBadge = 'SEGURO';
-                riskColor = 'green';
-                riskText = 'Baixo • LTV bem abaixo do threshold';
-            } else if (ltvRatio < 0.85) {
-                riskLevel = 'warning';
-                riskBadge = 'ATENÇÃO';
-                riskColor = 'yellow';
-                riskText = 'Moderado • Monitore de perto';
-            } else if (ltvRatio < 1) {
-                riskLevel = 'danger';
-                riskBadge = 'PERIGO';
-                riskColor = 'red';
-                riskText = 'Alto • Risco de liquidação';
-            } else {
-                riskLevel = 'liquidated';
-                riskBadge = 'LIQUIDADO';
-                riskColor = 'red';
-                riskText = 'Crítico • Posição liquidada';
-            }
-            
-            // Update UI
-            document.getElementById('loanAmount').textContent = formatUSD(loanAmount);
-            document.getElementById('loanAmountBTC').textContent = `≈ ${formatBTC(loanAmount / btcPrice)} BTC`;
-            document.getElementById('collateralUSD').textContent = formatUSD(collateralUSD);
-            document.getElementById('collateralBTC').textContent = `${btcAmount} BTC`;
-            
-            document.getElementById('totalInterest').textContent = formatUSD(totalInterest);
-            document.getElementById('monthlyInterest').textContent = formatUSD(monthlyInterest);
-            document.getElementById('interestBTC').textContent = `≈ ${formatBTC(interestBTC)} BTC`;
-            
-            document.getElementById('liquidationPrice').textContent = `$${Math.round(liquidationPrice).toLocaleString('pt-BR')}`;
-            document.querySelector('#liquidationPrice + span').textContent = `(${((liquidationPrice/btcPrice - 1)*100).toFixed(1)}% do atual)`;
-            
-            document.getElementById('safetyBar').style.width = `${Math.max(0, Math.min(100, safetyMargin))}%`;
-            document.getElementById('safetyPercent').textContent = `${safetyMargin}%`;
-            
-            // Update risk status
-            const riskStatus = document.getElementById('riskStatus');
-            riskStatus.className = `flex items-center justify-between p-4 rounded-xl border border-${riskColor}-500/30 bg-${riskColor}-500/10`;
-            document.getElementById('riskText').textContent = riskText;
-            document.getElementById('riskBadge').textContent = riskBadge;
-            document.getElementById('riskBadge').className = `risk-badge risk-${riskLevel}`;
-            
-            // Update stress test if visible
-            if (!document.getElementById('stressTestPanel').classList.contains('hidden')) {
-                runStressTest();
-            }
-        }
-
-        // ===== STRESS TEST =====
-        function toggleStressTest() {
-            const panel = document.getElementById('stressTestPanel');
-            panel.classList.toggle('hidden');
-            if (!panel.classList.contains('hidden')) {
-                runStressTest();
-            }
-        }
-
-        function runStressTest() {
-            const dropPercent = parseInt(document.getElementById('dropSlider').value) / 100;
-            document.getElementById('dropDisplay').textContent = `-${Math.round(dropPercent * 100)}%`;
-            
-            const btcAmount = parseFloat(document.getElementById('btcAmount').value) || 0;
-            const currentPrice = parseFloat(document.getElementById('btcPrice').value) || 0;
-            const ltv = parseInt(document.getElementById('ltvSlider').value) / 100;
-            const proto = PROTOCOLS[currentProtocol];
-            
-            const collateralUSD = btcAmount * currentPrice;
-            const loanAmount = collateralUSD * ltv;
-            const newPrice = currentPrice * (1 - dropPercent);
-            const newCollateralUSD = btcAmount * newPrice;
-            const newLTV = (loanAmount / newCollateralUSD * 100).toFixed(1);
-            
-            // Distance to liquidation with new price
-            const liquidationPrice = (loanAmount * (proto.liquidationThreshold / 100)) / (btcAmount * (1 - proto.liquidationFee));
-            const distanceToLiq = ((newPrice - liquidationPrice) / newPrice * 100).toFixed(1);
-            
-            // Status
-            let status, message, statusClass;
-            if (distanceToLiq > 20) {
-                status = 'SEGURO';
-                statusClass = 'risk-safe';
-                message = `Com queda de ${Math.round(dropPercent*100)}%, seu LTV é ${newLTV}%. Posição ainda confortável.`;
-            } else if (distanceToLiq > 5) {
-                status = 'ATENÇÃO';
-                statusClass = 'risk-warning';
-                message = `LTV em ${newLTV}%. Considere adicionar colateral ou reduzir dívida se a queda continuar.`;
-            } else if (distanceToLiq > 0) {
-                status = 'PERIGO';
-                statusClass = 'risk-danger';
-                message = `⚠️ LTV crítico (${newLTV}%). Liquidação iminente se o preço cair mais ${Math.abs(distanceToLiq).toFixed(1)}%.`;
-            } else {
-                status = 'LIQUIDADO';
-                statusClass = 'risk-liquidated';
-                message = `💀 Posição liquidada. LTV ${newLTV}% excedeu threshold de ${proto.liquidationThreshold}%.`;
-            }
-            
-            document.getElementById('newPrice').textContent = `$${Math.round(newPrice).toLocaleString('pt-BR')}`;
-            document.getElementById('newLTV').textContent = `${newLTV}%`;
-            document.getElementById('distanceToLiq').textContent = `${distanceToLiq > 0 ? '-' : ''}${Math.abs(distanceToLiq).toFixed(1)}%`;
-            document.getElementById('stressStatus').textContent = status;
-            document.getElementById('stressStatus').className = `risk-badge ${statusClass}`;
-            document.getElementById('stressMessage').textContent = message;
-        }
-
-        // ===== COINGECKO API =====
-        async function fetchBTCPrice() {
-            try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-                const data = await res.json();
-                return data.bitcoin.usd;
-            } catch (e) {
-                console.warn('CoinGecko API failed, using fallback');
-                return 45000 + (Math.random() - 0.5) * 2000; // Fallback with slight variation
-            }
-        }
-
-        async function refreshBTCPrice() {
-            const icon = document.getElementById('refreshIcon');
-            icon.classList.add('animate-spin');
-            
-            const newPrice = await fetchBTCPrice();
-            btcPrice = newPrice;
-            
-            // Update all price displays
-            document.getElementById('btcPrice').value = Math.round(newPrice);
-            document.getElementById('btcPriceLive').textContent = `$${Math.round(newPrice).toLocaleString('pt-BR')}`;
+            // Set last update time
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
             
-            // Recalculate
-            calculateLoan();
+            // Start price auto-update
+            startPriceAutoUpdate();
             
-            icon.classList.remove('animate-spin');
-        }
+            // Initialize loan chart
+            initLoanChart();
+        });
 
-        function toggleAutoRefresh() {
-            if (document.getElementById('autoRefresh').checked) {
-                startAutoRefresh();
-            } else {
-                stopAutoRefresh();
-            }
-        }
-
-        function startAutoRefresh() {
-            stopAutoRefresh();
-            autoRefreshInterval = setInterval(refreshBTCPrice, 30000); // 30 seconds
-        }
-
-        function stopAutoRefresh() {
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-            }
-        }
-
-        // ===== UTILITÁRIOS =====
-        function formatUSD(value) {
-            return `$${value.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        }
-
-        function formatBTC(value) {
-            return value < 0.01 ? value.toFixed(6) : value.toFixed(4);
-        }
-
-        // ===== UI HELPERS =====
-        function scrollToSection(id) {
-            document.getElementById(id).scrollIntoView({behavior: 'smooth'});
-        }
-
+        // ==================== THEME & LANGUAGE ====================
         function toggleTheme() {
             document.documentElement.classList.toggle('light');
+            document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
+            
+            if (charts.mvrv) updateChartTheme(charts.mvrv);
+            if (charts.nupl) updateChartTheme(charts.nupl);
+            if (charts.mvrvEth) updateChartTheme(charts.mvrvEth);
+            if (charts.volume) updateChartTheme(charts.volume);
+            if (charts.loan) updateChartTheme(charts.loan);
+        }
+
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            document.documentElement.lang = lang;
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang]?.[key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            localStorage.setItem('language', lang);
+            showToast('Idioma alterado para ' + lang.toUpperCase());
         }
 
         function toggleMobileMenu() {
             document.getElementById('mobileMenu').classList.toggle('active');
         }
 
-        function filterStrategies(filter) {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-primary', 'text-white'));
-            event.target.classList.add('active', 'bg-primary', 'text-white');
-            // In a full implementation, filter strategy cards here
+        // ==================== NAVIGATION ====================
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('mobileMenu').classList.remove('active');
         }
 
-        function changeLanguage(lang) {
-            // Placeholder for i18n implementation
-            console.log(`Language changed to ${lang}`);
+        // ==================== STRATEGY FILTER ====================
+        function filterStrategies(risk) {
+            const cards = document.querySelectorAll('.strategy-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => {
+                if (btn.dataset.filter === risk) {
+                    btn.classList.add('bg-primary', 'text-white');
+                    btn.classList.remove('bg-green-500/20', 'bg-yellow-500/20', 'bg-red-500/20');
+                } else {
+                    btn.classList.remove('bg-primary', 'text-white');
+                    if (btn.dataset.filter === 'conservative') btn.classList.add('bg-green-500/20', 'text-green-400');
+                    else if (btn.dataset.filter === 'moderate') btn.classList.add('bg-yellow-500/20', 'text-yellow-400');
+                    else if (btn.dataset.filter === 'aggressive') btn.classList.add('bg-red-500/20', 'text-red-400');
+                }
+            });
+            
+            cards.forEach(card => {
+                if (risk === 'all' || card.dataset.risk === risk) {
+                    card.style.display = 'block';
+                    setTimeout(() => { card.style.opacity = '1'; card.style.transform = 'scale(1)'; }, 10);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    setTimeout(() => { card.style.display = 'none'; }, 300);
+                }
+            });
         }
 
-        // Track manual APR edits
-        document.getElementById('aprRate').addEventListener('input', function() {
-            this.dataset.userEdited = 'true';
-        });
-
-        // Initialize theme from localStorage
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.add('light');
+        // ==================== PROFESSIONAL SIMULATOR FUNCTIONS ====================
+        
+        // Fetch BTC Price from CoinGecko
+        async function fetchBTCPrice() {
+            try {
+                const btn = document.getElementById('fetchPriceBtn');
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i>';
+                lucide.createIcons();
+                
+                const response = await fetch(config.apiEndpoints.coinGecko);
+                const data = await response.json();
+                const price = data.bitcoin.usd;
+                
+                document.getElementById('btcPrice').value = price;
+                document.getElementById('btcPriceLive').textContent = price.toLocaleString();
+                calculateLoan();
+                
+                showToast('Preço atualizado: $' + price.toLocaleString());
+            } catch (error) {
+                console.error('Erro ao buscar preço BTC:', error);
+                showToast('Erro ao atualizar preço. Tente manualmente.', 'error');
+            } finally {
+                btn.innerHTML = '<i data-lucide="refresh-cw" class="w-3 h-3"></i><span>Atualizar</span>';
+                lucide.createIcons();
+            }
         }
+
+        function togglePriceMode() {
+            priceAutoUpdate = !priceAutoUpdate;
+            const btn = document.getElementById('priceModeBtn');
+            
+            if (priceAutoUpdate) {
+                btn.innerHTML = '🔄 Auto';
+                btn.classList.add('bg-primary/20', 'text-primary');
+                btn.classList.remove('bg-slate-700', 'text-slate-400');
+                startPriceAutoUpdate();
+                showToast('Atualização automática ativada');
+            } else {
+                btn.innerHTML = '✏️ Manual';
+                btn.classList.remove('bg-primary/20', 'text-primary');
+                btn.classList.add('bg-slate-700', 'text-slate-400');
+                stopPriceAutoUpdate();
+                showToast('Modo manual ativado');
+            }
+        }
+
+        function startPriceAutoUpdate() {
+            if (priceUpdateInterval) clearInterval(priceUpdateInterval);
+            fetchBTCPrice();
+            priceUpdateInterval = setInterval(fetchBTCPrice, 30000); // 30 seconds
+        }
+
+        function stopPriceAutoUpdate() {
+            if (priceUpdateInterval) {
+                clearInterval(priceUpdateInterval);
+                priceUpdateInterval = null;
+            }
+        }
+
+        function updateProtocolParams() {
+            const protocol = document.getElementById('protocolSelect').value;
+            const params = config.protocols[protocol];
+            
+            document.getElementById('maxLTVDisplay').textContent = params.maxLTV + '%';
+            document.getElementById('liqThresholdDisplay').textContent = params.liqThreshold + '%';
+            document.getElementById('aprRate').value = params.apr;
+            
+            // Update LTV slider max
+            const ltvSlider = document.getElementById('ltvSlider');
+            ltvSlider.max = Math.min(75, params.maxLTV);
+        }
+
+        function updateLTVDisplay() {
+            const ltv = document.getElementById('ltvSlider').value;
+            document.getElementById('ltvDisplay').textContent = ltv + '%';
+            document.getElementById('ltvMarker').style.left = ltv + '%';
+        }
+
+        function setPeriod(months) {
+            document.getElementById('loanPeriod').value = months;
+            
+            // Update button states
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                if (parseInt(btn.dataset.months) === months) {
+                    btn.classList.add('active', 'bg-primary', 'text-white');
+                    btn.classList.remove('bg-slate-800', 'text-slate-300');
+                } else {
+                    btn.classList.remove('active', 'bg-primary', 'text-white');
+                    btn.classList.add('bg-slate-800', 'text-slate-300');
+                }
+            });
+            
+            calculateLoan();
+        }
+
+        function calculateLoan() {
+            const btcAmount = parseFloat(document.getElementById('btcAmount').value) || 0;
+            const btcPrice = parseFloat(document.getElementById('btcPrice').value) || 0;
+            const ltv = parseFloat(document.getElementById('ltvSlider').value) || 0;
+            const apr = parseFloat(document.getElementById('aprRate').value) || 0;
+            const period = parseInt(document.getElementById('loanPeriod').value) || 12;
+            const protocol = document.getElementById('protocolSelect').value;
+            const liqThreshold = config.protocols[protocol].liqThreshold / 100;
+            
+            // Calculate values
+            const collateralValue = btcAmount * btcPrice;
+            const loanValue = collateralValue * (ltv / 100);
+            
+            // Liquidation price: (Loan Value / Collateral Amount) / Liquidation Threshold
+            const liquidationPrice = (loanValue / btcAmount) / liqThreshold;
+            const dropToLiq = ((btcPrice - liquidationPrice) / btcPrice * 100).toFixed(1);
+            
+            // APR calculation (simple interest, not compound)
+            const annualInterest = loanValue * (apr / 100);
+            const totalInterest = annualInterest * (period / 12);
+            const interestBTC = totalInterest / btcPrice;
+            const monthlyCost = totalInterest / period;
+            
+            // Update display
+            document.getElementById('loanValue').textContent = '$' + loanValue.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('liquidationPrice').textContent = '$' + liquidationPrice.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('dropToLiq').textContent = dropToLiq + '%';
+            document.getElementById('annualInterest').textContent = '$' + annualInterest.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('totalInterest').textContent = '$' + totalInterest.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('interestBTC').textContent = interestBTC.toFixed(4) + ' BTC';
+            document.getElementById('monthlyCost').textContent = '$' + monthlyCost.toFixed(2);
+            
+            // Risk assessment
+            updateRiskIndicator(ltv, dropToLiq);
+            
+            // Update comparison
+            updateComparison(btcAmount, btcPrice, loanValue, totalInterest);
+            
+            // Update chart
+            updateLoanChart(btcPrice, liquidationPrice, ltv);
+            
+            // Initial stress test
+            simulateDrop();
+        }
+
+        function updateRiskIndicator(ltv, dropToLiq) {
+            const riskBar = document.getElementById('riskBar');
+            const riskBadge = document.getElementById('riskBadge');
+            const riskText = document.getElementById('riskText');
+            
+            riskBar.style.width = Math.min(ltv, 100) + '%';
+            
+            if (ltv <= 25) {
+                riskBadge.textContent = 'BAIXO';
+                riskBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400';
+                riskText.innerHTML = '✅ Posição segura. Margin de segurança: <span class="text-green-400 font-bold">' + dropToLiq + '%</span>';
+            } else if (ltv <= 40) {
+                riskBadge.textContent = 'MODERADO';
+                riskBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-yellow-500/20 text-yellow-400';
+                riskText.innerHTML = '⚠️ Risco moderado. Monitore volatilidade. Margin: <span class="text-yellow-400 font-bold">' + dropToLiq + '%</span>';
+            } else if (ltv <= 60) {
+                riskBadge.textContent = 'ALTO';
+                riskBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400';
+                riskText.innerHTML = '🔴 Risco elevado. Considere reduzir LTV. Margin: <span class="text-orange-400 font-bold">' + dropToLiq + '%</span>';
+            } else {
+                riskBadge.textContent = 'MUITO ALTO';
+                riskBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400';
+                riskText.innerHTML = '⛔ Perigo de liquidação! Reduza LTV imediatamente. Margin: <span class="text-red-400 font-bold">' + dropToLiq + '%</span>';
+            }
+        }
+
+        function updateDropDisplay() {
+            const drop = document.getElementById('dropSlider').value;
+            document.getElementById('dropDisplay').textContent = drop + '%';
+        }
+
+        function simulateDrop() {
+            const btcPrice = parseFloat(document.getElementById('btcPrice').value) || 0;
+            const ltv = parseFloat(document.getElementById('ltvSlider').value) || 0;
+            const drop = parseFloat(document.getElementById('dropSlider').value) || 0;
+            const protocol = document.getElementById('protocolSelect').value;
+            const liqThreshold = config.protocols[protocol].liqThreshold / 100;
+            
+            const newPrice = btcPrice * (1 - drop/100);
+            const collateralValue = parseFloat(document.getElementById('btcAmount').value) * newPrice;
+            const loanValue = collateralValue * (ltv / 100) / (1 - drop/100); // Keep loan constant
+            const newLTV = (loanValue / collateralValue * 100);
+            const liquidationPrice = (loanValue / parseFloat(document.getElementById('btcAmount').value)) / liqThreshold;
+            const margin = ((newPrice - liquidationPrice) / newPrice * 100);
+            
+            document.getElementById('stressPrice').textContent = '$' + newPrice.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('stressLTV').textContent = newLTV.toFixed(1) + '%';
+            
+            const statusEl = document.getElementById('stressStatus');
+            const marginEl = document.getElementById('stressMargin');
+            
+            if (newPrice <= liquidationPrice) {
+                statusEl.textContent = '💀 LIQUIDADO';
+                statusEl.className = 'font-bold text-red-500 animate-pulse';
+                marginEl.textContent = '0%';
+                marginEl.className = 'font-mono text-red-500';
+            } else if (margin < 10) {
+                statusEl.textContent = '⚠️ Perigo';
+                statusEl.className = 'font-bold text-orange-400';
+                marginEl.textContent = margin.toFixed(1) + '%';
+                marginEl.className = 'font-mono text-orange-400';
+            } else if (margin < 25) {
+                statusEl.textContent = '⚡ Atenção';
+                statusEl.className = 'font-bold text-yellow-400';
+                marginEl.textContent = margin.toFixed(1) + '%';
+                marginEl.className = 'font-mono text-yellow-400';
+            } else {
+                statusEl.textContent = '✅ Seguro';
+                statusEl.className = 'font-bold text-green-400';
+                marginEl.textContent = margin.toFixed(1) + '%';
+                marginEl.className = 'font-mono text-green-400';
+            }
+        }
+
+        function updateComparison(btcAmount, btcPrice, loanValue, totalInterest) {
+            const sellValue = btcAmount * btcPrice;
+            const tax = sellValue * 0.15; // 15% tax
+            const sellNet = sellValue - tax;
+            
+            const priceIncrease = 0.5; // 50% increase scenario
+            const futureBTCValue = btcAmount * btcPrice * (1 + priceIncrease);
+            const gainIfHeld = futureBTCValue - sellValue;
+            
+            document.getElementById('sellReceive').textContent = '$' + sellNet.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('borrowReceive').textContent = '$' + loanValue.toLocaleString('en-US', {maximumFractionDigits: 0});
+            
+            const borrowAdvantage = gainIfHeld - totalInterest;
+            document.getElementById('borrowAdvantage').textContent = (borrowAdvantage >= 0 ? '+' : '') + '$' + borrowAdvantage.toLocaleString('en-US', {maximumFractionDigits: 0});
+        }
+
+        // ==================== CHARTS ====================
+        function initCharts() {
+            const isDark = !document.documentElement.classList.contains('light');
+            const textColor = isDark ? '#94a3b8' : '#475569';
+            const gridColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(71, 85, 105, 0.1)';
+            
+            // MVRV Chart
+            const mvrvCtx = document.getElementById('mvrvChart').getContext('2d');
+            charts.mvrv = new Chart(mvrvCtx, {
+                type: 'line',
+                data: {
+                    labels: config.mockData.mvrv.labels,
+                    datasets: [{
+                        label: 'MVRV Z-Score',
+                        data: config.mockData.mvrv.values,
+                        borderColor: '#f7931a',
+                        backgroundColor: 'rgba(247, 147, 26, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Zona de Topo',
+                        data: Array(12).fill(3.5),
+                        borderColor: 'rgba(239, 68, 68, 0.5)',
+                        borderDash: [5, 5],
+                        borderWidth: 1,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Zona de Fundo',
+                        data: Array(12).fill(1),
+                        borderColor: 'rgba(16, 185, 129, 0.5)',
+                        borderDash: [5, 5],
+                        borderWidth: 1,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } }, min: -1, max: 5 }
+                    }
+                }
+            });
+            
+            // NUPL Chart
+            const nuplCtx = document.getElementById('nuplChart').getContext('2d');
+            charts.nupl = new Chart(nuplCtx, {
+                type: 'line',
+                data: {
+                    labels: config.mockData.nupl.labels,
+                    datasets: [{
+                        label: 'NUPL',
+                        data: config.mockData.nupl.values,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } }, min: -0.5, max: 1 }
+                    }
+                }
+            });
+            
+            // MVRV ETH Chart
+            const mvrvEthCtx = document.getElementById('mvrvEthChart').getContext('2d');
+            charts.mvrvEth = new Chart(mvrvEthCtx, {
+                type: 'line',
+                data: {
+                    labels: config.mockData.mvrvEth.labels,
+                    datasets: [{
+                        label: 'MVRV ETH',
+                        data: config.mockData.mvrvEth.values,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } }, min: 0, max: 4 }
+                    }
+                }
+            });
+            
+            // Volume Chart
+            const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+            charts.volume = new Chart(volumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: config.mockData.volume.labels,
+                    datasets: [{
+                        label: 'Volume (K BTC)',
+                        data: config.mockData.volume.values,
+                        backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                        borderColor: '#8b5cf6',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } },
+                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function initLoanChart() {
+            const ctx = document.getElementById('loanChart').getContext('2d');
+            const isDark = !document.documentElement.classList.contains('light');
+            
+            charts.loan = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Atual', '-10%', '-20%', '-30%', '-40%', '-50%'],
+                    datasets: [
+                        {
+                            label: 'Preço BTC',
+                            data: [],
+                            borderColor: '#f7931a',
+                            backgroundColor: 'rgba(247, 147, 26, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 6,
+                            pointBackgroundColor: '#f7931a'
+                        },
+                        {
+                            label: 'Preço de Liquidação',
+                            data: [],
+                            borderColor: '#ef4444',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#ef4444'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            labels: { color: isDark ? '#94a3b8' : '#475569' }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            grid: { color: isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(71, 85, 105, 0.1)' },
+                            ticks: { color: isDark ? '#94a3b8' : '#475569' }
+                        },
+                        y: {
+                            grid: { color: isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(71, 85, 105, 0.1)' },
+                            ticks: { 
+                                color: isDark ? '#94a3b8' : '#475569',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateLoanChart(currentPrice, liquidationPrice, ltv) {
+            if (!charts.loan) return;
+            
+            const drops = [0, 10, 20, 30, 40, 50];
+            const priceData = drops.map(drop => currentPrice * (1 - drop/100));
+            const liqData = drops.map(() => liquidationPrice);
+            
+            charts.loan.data.datasets[0].data = priceData;
+            charts.loan.data.datasets[1].data = liqData;
+            charts.loan.update();
+        }
+
+        function updateChartTheme(chart) {
+            const isDark = !document.documentElement.classList.contains('light');
+            const textColor = isDark ? '#94a3b8' : '#475569';
+            const gridColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(71, 85, 105, 0.1)';
+            
+            chart.options.scales.x.ticks.color = textColor;
+            chart.options.scales.x.grid.color = gridColor;
+            chart.options.scales.y.ticks.color = textColor;
+            chart.options.scales.y.grid.color = gridColor;
+            chart.update();
+        }
+
+        // ==================== MARKET CYCLE & PRICE UPDATES ====================
+        function updateMarketCycle() {
+            const mvrv = 2.14;
+            const cycleEl = document.getElementById('marketCycleDisplay');
+            
+            if (mvrv > 3.5) {
+                cycleEl.innerHTML = '🔴 Zona de Topo - Proteja Capital';
+                cycleEl.parentElement.querySelector('.bg-green-500').className = 'w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse';
+            } else if (mvrv < 1) {
+                cycleEl.innerHTML = '🟢 Zona de Acumulação - Oportunidade';
+                cycleEl.parentElement.querySelector('.bg-green-500').className = 'w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse';
+            } else {
+                cycleEl.innerHTML = '🟡 Zona Neutra - Estratégias Balanceadas';
+                cycleEl.parentElement.querySelector('.bg-green-500').className = 'w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse';
+            }
+        }
+
+        // ==================== APY DATA LOADING ====================
+        async function loadApyData() {
+            try {
+                const pools = config.lendingProtocols.map(p => ({
+                    ...p,
+                    supplyApy: p.supplyApy + (Math.random() - 0.5) * 0.5,
+                    borrowApy: p.borrowApy + (Math.random() - 0.5) * 0.3
+                }));
+                
+                renderApyTable(pools);
+                updateBestApy(pools);
+            } catch (error) {
+                console.error('Error loading APY data:', error);
+                renderApyTable(config.lendingProtocols);
+            }
+        }
+
+        function renderApyTable(pools) {
+            const tbody = document.getElementById('apyTableBody');
+            tbody.innerHTML = '';
+            
+            const sorted = [...pools].sort((a, b) => b.supplyApy - a.supplyApy);
+            
+            sorted.forEach((pool, index) => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-white/5 hover:bg-white/5 transition-colors';
+                if (index === 0) row.classList.add('bg-green-500/10');
+                
+                row.innerHTML = `
+                    <td class="py-3">
+                        <div class="font-medium">${pool.name}</div>
+                        ${index === 0 ? '<span class="text-xs text-green-400">★ Melhor Supply</span>' : ''}
+                    </td>
+                    <td class="py-3 text-slate-400">${pool.network}</td>
+                    <td class="py-3 text-right font-bold ${index === 0 ? 'text-green-400' : 'text-secondary'}">${pool.supplyApy.toFixed(2)}%</td>
+                    <td class="py-3 text-right text-slate-300">${pool.borrowApy.toFixed(2)}%</td>
+                    <td class="py-3 text-center text-slate-400">${pool.tvl}</td>
+                    <td class="py-3 text-center">
+                        <button onclick="openProtocol('${pool.name.toLowerCase()}')" 
+                            class="px-3 py-1.5 bg-primary/20 hover:bg-primary/30 text-primary rounded-lg text-xs font-medium transition-colors">
+                            Abrir
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateBestApy(pools) {
+            const best = pools.reduce((max, p) => p.supplyApy > max.supplyApy ? p : max);
+            document.getElementById('bestApy').textContent = best.supplyApy.toFixed(1) + '%';
+        }
+
+        function refreshApyData() {
+            showToast('Atualizando taxas...');
+            loadApyData();
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
+        }
+
+        // ==================== ALERTS SYSTEM ====================
+        function saveAlerts() {
+            const alerts = {
+                apy: document.getElementById('alertApy').checked,
+                mvrv: document.getElementById('alertMvrv').checked,
+                tvl: document.getElementById('alertTvl').checked,
+                opportunity: document.getElementById('alertOpportunity').checked
+            };
+            localStorage.setItem('alertPreferences', JSON.stringify(alerts));
+            showToast('Configurações de alerta salvas!');
+        }
+
+        function clearAlerts() {
+            document.getElementById('alertsList').innerHTML = '<p class="text-sm text-slate-400 text-center py-8">Nenhum alerta ativo</p>';
+            document.getElementById('alertBadge').classList.add('hidden');
+            showToast('Alertas limpos');
+        }
+
+        function connectTelegram() {
+            showToast('Redirecionando para configuração do Telegram...');
+            setTimeout(() => {
+                alert('Para produção: integrar com Telegram Bot API para enviar alertas em tempo real.');
+            }, 1000);
+        }
+
+        // ==================== EDUCATION MODAL ====================
+        const educationContent = {
+            mvrv: {
+                title: 'O que é MVRV?',
+                content: `
+                    <p><strong>MVRV (Market Value to Realized Value)</strong> compara o valor de mercado atual do Bitcoin com o preço médio que os holders pagaram.</p>
+                    <ul class="list-disc list-inside space-y-1 mt-2">
+                        <li><strong>MVRV > 3.5:</strong> Mercado sobrevalorizado (zona de topo histórico)</li>
+                        <li><strong>MVRV 1-3.5:</strong> Zona neutra a otimista</li>
+                        <li><strong>MVRV < 1:</strong> Mercado subvalorizado (oportunidade de acumulação)</li>
+                    </ul>
+                    <p class="mt-3"><em>Fonte: Glassnode, CoinMetrics</em></p>
+                `
+            },
+            ltv: {
+                title: 'Como calcular LTV seguro?',
+                content: `
+                    <p><strong>LTV (Loan-to-Value)</strong> é a razão entre o valor emprestado e o valor do colateral.</p>
+                    <div class="bg-slate-800/50 rounded p-3 my-3 font-mono text-sm">
+                        LTV = (Valor do Empréstimo / Valor do Colateral) × 100%
+                    </div>
+                    <p><strong>Recomendações de segurança:</strong></p>
+                    <ul class="list-disc list-inside space-y-1 mt-2">
+                        <li>🟢 ≤25%: Muito seguro, ideal para iniciantes</li>
+                        <li>🟡 25-40%: Moderado, requer monitoramento</li>
+                        <li>🔴 ≥40%: Alto risco, apenas para profissionais</li>
+                    </ul>
+                    <p class="mt-3 text-yellow-400"><strong>Regra de ouro:</strong> Nunca ultrapasse 30% se não for experiente.</p>
+                `
+            },
+            arbitrage: {
+                title: 'Arbitragem de Juros: Passo a Passo',
+                content: `
+                    <p>A arbitragem de juros aproveita diferenças de taxas entre protocolos DeFi.</p>
+                    <ol class="list-decimal list-inside space-y-2 mt-2">
+                        <li>Identifique protocolo com borrow barato (ex: Aave a 4%)</li>
+                        <li>Encontre protocolo com supply rentável (ex: Spark a 8%)</li>
+                        <li>Borrow no primeiro, supply no segundo</li>
+                        <li>Lucro = Spread - Taxas de rede - Riscos</li>
+                    </ol>
+                    <div class="bg-green-500/10 border border-green-500/30 rounded p-3 mt-3">
+                        <strong>Exemplo:</strong> Borrow 4% + Supply 8% = ~4% spread líquido
+                    </div>
+                    <p class="mt-3 text-sm text-slate-400"><strong>Atenção:</strong> Monitore taxas variáveis e risco de smart contract.</p>
+                `
+            }
+        };
+
+        function showEducationModal(key) {
+            const content = educationContent[key];
+            if (!content) return;
+            
+            document.getElementById('modalTitle').textContent = content.title;
+            document.getElementById('modalContent').innerHTML = content.content;
+            document.getElementById('educationModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeEducationModal() {
+            document.getElementById('educationModal').classList.add('hidden');
+        }
+
+        // ==================== PROTOCOL & STRATEGY ACTIONS ====================
+        function openProtocol(name) {
+            const urls = {
+                'aave': 'https://app.aave.com/',
+                'compound': 'https://app.compound.finance/',
+                'makerdao': 'https://oasis.app/',
+                'spark': 'https://app.sparkprotocol.io/'
+            };
+            
+            const url = urls[name] || 'https://defillama.com/protocols';
+            window.open(url, '_blank');
+            showToast('Abrindo ' + name.charAt(0).toUpperCase() + name.slice(1) + '...');
+        }
+
+        function compareProtocols() {
+            showToast('Comparando protocolos...');
+            setTimeout(() => {
+                alert('Comparação:\n\n🥇 Spark: 8.4% APY (Melhor supply)\n🥈 Aave XLayer: 6.2% APY (Rede barata)\n🥉 MakerDAO: 5.0% APY (Mais descentralizado)\n\nRecomendação: Spark para yield máximo, Aave para segurança.');
+            }, 800);
+        }
+
+        function showStrategyDetail(strategy) {
+            const details = {
+                'carry': 'Carry Trade: Borrow USDC a 4% em Aave → Supply em Spark a 8.4% → Spread líquido ~4.4% APY. Risco: taxas variáveis, impermanent loss em pools.',
+                'borrow-btc': 'Borrow BTC → Buy ETH: Use BTC como colateral para exposição a ETH. Funciona bem quando ETH/BTC está em tendência de alta. Risco: correlação entre ativos.',
+                'stable-stack': 'Stablecoin Stacking: Automatize a rotação de capital entre protocolos conforme APY muda. Use bots ou monitoramento manual. Risco: taxas de transação, slippage.'
+            };
+            
+            showToast(details[strategy] || 'Estratégia selecionada');
+        }
+
+        function refreshData() {
+            showToast('Atualizando todos os dados...');
+            loadApyData();
+            updateMarketCycle();
+            fetchBTCPrice();
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
+        }
+
+        // ==================== UTILITIES ====================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            
+            if (type === 'error') {
+                toast.querySelector('.border-green-500/30').className = 'border-red-500/30';
+                toast.querySelector('.text-green-400').className = 'text-red-400';
+            } else {
+                toast.querySelector('.border-red-500/30').className = 'border-green-500/30';
+                toast.querySelector('.text-red-400').className = 'text-green-400';
+            }
+            
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Expose functions globally
+        window.toggleTheme = toggleTheme;
+        window.changeLanguage = changeLanguage;
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.scrollToSection = scrollToSection;
+        window.filterStrategies = filterStrategies;
+        window.fetchBTCPrice = fetchBTCPrice;
+        window.togglePriceMode = togglePriceMode;
+        window.updateProtocolParams = updateProtocolParams;
+        window.updateLTVDisplay = updateLTVDisplay;
+        window.setPeriod = setPeriod;
+        window.calculateLoan = calculateLoan;
+        window.updateDropDisplay = updateDropDisplay;
+        window.simulateDrop = simulateDrop;
+        window.openProtocol = openProtocol;
+        window.compareProtocols = compareProtocols;
+        window.showStrategyDetail = showStrategyDetail;
+        window.saveAlerts = saveAlerts;
+        window.clearAlerts = clearAlerts;
+        window.connectTelegram = connectTelegram;
+        window.showEducationModal = showEducationModal;
+        window.closeEducationModal = closeEducationModal;
+        window.refreshData = refreshData;
+        window.refreshApyData = refreshApyData;
     </script>
 </body>
 </html>
